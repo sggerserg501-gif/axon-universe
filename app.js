@@ -4,10 +4,11 @@ let currentState = 0;
 let isPaused = false;
 
 function renderLoop() {
-  ctx.clearRect(0, 0, 1280, 900);
+  resizeCanvas();
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
   if (!isDragging && !isPaused) rotY += 0.004;
 
-  const scene = buildScene(currentMod, currentState, currentLang === "ru" ? "ru" : "en");
+  const scene = buildScene(currentMod, currentState, currentLang);
   const projected = scene.pts.map(o => {
     const q = project3D(o.x, o.y, o.z);
     return { ...q, r: o.r * q.sc, c: o.c };
@@ -15,16 +16,18 @@ function renderLoop() {
 
   for (let o of projected) {
     ctx.beginPath();
-    ctx.arc(o.x, o.y, Math.max(4, o.r), 0, 6.28);
+    ctx.arc(o.x, o.y, Math.max(3, o.r), 0, 6.28);
     ctx.fillStyle = o.c;
     ctx.fill();
   }
 
-  ctx.font = "bold 15px Segoe UI, Arial, sans-serif";
+  ctx.font = "bold 14px Segoe UI, Arial, sans-serif";
   for (let l of scene.labels) {
     const q = project3D(l.x, l.y, l.z);
-    const tx = q.x + l.ox;
-    const ty = q.y + l.oy;
+    const w = ctx.measureText(l.t).width + 18;
+    let tx = Math.max(12, Math.min(canvas.width - w - 12, q.x + l.ox));
+    let ty = Math.max(24, Math.min(canvas.height - 16, q.y + l.oy));
+
     ctx.beginPath();
     ctx.moveTo(q.x, q.y);
     ctx.lineTo(tx, ty);
@@ -32,7 +35,6 @@ function renderLoop() {
     ctx.lineWidth = 2;
     ctx.stroke();
 
-    const w = ctx.measureText(l.t).width + 18;
     ctx.fillStyle = "rgba(15, 23, 42, 0.94)";
     ctx.fillRect(tx, ty - 18, w, 26);
     ctx.strokeStyle = "#38bdf8";
@@ -43,7 +45,6 @@ function renderLoop() {
   }
   requestAnimationFrame(renderLoop);
 }
-
 function selectModule(idx, el) {
   currentMod = idx;
   document.querySelectorAll(".tab").forEach(b => b.classList.remove("active"));
@@ -91,8 +92,8 @@ function toggleEditor() {
 
 function toggleFullscreen() {
   document.getElementById("sidebar").classList.toggle("hidden");
+  resizeCanvas();
 }
-
 function hideReport() {
   const rep = document.getElementById("checkReport");
   if (rep) rep.style.display = "none";
@@ -116,6 +117,7 @@ function showReport(type, text) {
     rep.style.color = "#f87171";
   }
 }
+
 function validateMedicalText(desc, tactics, author) {
   const isRu = currentLang === "ru";
   const full = (desc + " " + tactics).toLowerCase();
@@ -123,7 +125,7 @@ function validateMedicalText(desc, tactics, author) {
   if (desc.length < 20 || tactics.length < 15) {
     return { status: "err", msg: isRu ? "❌ Ошибка: слишком короткий текст. Опишите клинику и тактику подробнее." : "❌ Error: Text is too short. Please provide detailed clinical notes." };
   }
-  if (/https?:\/\/|www\.|@|\+7\d{9}/i.test(full + " " + author)) {
+  if (/https?:\/\/|www\.|@|(\+?\d[\d\s\-()]{7,}\d)/i.test(full + " " + author)) {
     return { status: "err", msg: isRu ? "❌ Заблокировано: внешние ссылки, реклама и телефоны запрещены правилами атласа." : "❌ Blocked: External links, ads, or phone numbers are not allowed." };
   }
   if (/(гарантия 100%|чудо|за 1 день|magic cure|100% guarantee)/i.test(full)) {
@@ -134,7 +136,6 @@ function validateMedicalText(desc, tactics, author) {
   }
   return { status: "ok", msg: isRu ? "✔ Автопроверка пройдена: медицинский стиль и авторство подтверждены!" : "✔ Auto-check passed: Medical style and authorship verified!" };
 }
-
 function saveDoctorEdit() {
   const desc = document.getElementById("editDesc").value.trim();
   const tactics = document.getElementById("editTactics").value.trim();
@@ -166,12 +167,25 @@ function sendToGitHub() {
   const langData = DB[currentLang];
   const modName = langData.ui.tabs[currentMod];
   const info = langData.modules[currentMod].states[currentState];
+  const rawBody = "Author / Clinic: " + info.author + "\nLanguage: " + currentLang.toUpperCase() + "\nModule: " + modName + "\n\nClinical Description:\n" + info.desc + "\n\nClinical Strategy:\n" + info.tactics;
   const title = encodeURIComponent("[Medical Edit - " + currentLang.toUpperCase() + "] " + modName + " - " + info.title);
-  const body = encodeURIComponent("Author / Clinic: " + info.author + "\nLanguage: " + currentLang.toUpperCase() + "\nModule: " + modName + "\n\nClinical Description:\n" + info.desc + "\n\nClinical Strategy:\n" + info.tactics);
-  const url = "https://github.com" + "/sggerserg501-gif/axon-universe/issues/new?title=" + title + "&body=" + body;
+     const slash = String.fromCharCode(47);
+  const base = "https:" + slash + slash + "github.com" + slash + "sggerserg501-gif" + slash + "axon-universe" + slash + "issues" + slash + "new?title=";
+
+ 
+  
+
+
+  if (rawBody.length > 1800) {
+    navigator.clipboard.writeText(rawBody);
+    showReport("warn", currentLang === "ru" ? "⚠ Текст скопирован в буфер обмена — вставьте его в открывшееся окно GitHub." : "⚠ Text copied to clipboard — paste it into the opened GitHub issue.");
+    window.open(base + title, "_blank");
+    return;
+  }
+
+  const url = base + title + "&body=" + encodeURIComponent(rawBody);
   window.open(url, "_blank");
 }
-
 function updateUI() {
   const langData = DB[currentLang] || DB.en;
   document.getElementById("subTxt").innerText = langData.ui.sub;
