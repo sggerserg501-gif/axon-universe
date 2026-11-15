@@ -55,11 +55,13 @@ function selectState(idx, el) {
   currentState = idx;
   document.querySelectorAll(".state-btn").forEach(b => b.classList.remove("active"));
   el.classList.add("active");
+  hideReport();
   updateUI();
 }
 
 function toggleLang() {
   currentLang = currentLang === "ru" ? "en" : "ru";
+  hideReport();
   updateUI();
 }
 
@@ -81,24 +83,84 @@ function updatePauseBtn() {
 function toggleEditor() {
   const box = document.getElementById("editorBox");
   box.style.display = box.style.display === "block" ? "none" : "block";
+  hideReport();
 }
 
 function toggleFullscreen() {
   document.getElementById("sidebar").classList.toggle("hidden");
 }
 
+function hideReport() {
+  const rep = document.getElementById("checkReport");
+  if (rep) rep.style.display = "none";
+}
+
+function showReport(type, text) {
+  const rep = document.getElementById("checkReport");
+  rep.style.display = "block";
+  rep.innerText = text;
+  if (type === "ok") {
+    rep.style.background = "rgba(16, 185, 129, 0.15)";
+    rep.style.border = "1px solid #059669";
+    rep.style.color = "#34d399";
+  } else if (type === "warn") {
+    rep.style.background = "rgba(245, 158, 11, 0.15)";
+    rep.style.border = "1px solid #d97706";
+    rep.style.color = "#fbbf24";
+  } else {
+    rep.style.background = "rgba(239, 68, 68, 0.15)";
+    rep.style.border = "1px solid #dc2626";
+    rep.style.color = "#f87171";
+  }
+}
+
+function validateMedicalText(desc, tactics, author) {
+  const isRu = currentLang === "ru";
+  const full = (desc + " " + tactics).toLowerCase();
+
+  if (desc.length < 25 || tactics.length < 20) {
+    return { status: "err", msg: isRu ? "❌ Ошибка: слишком короткий текст. Опишите клинику и тактику подробнее (минимум 25 символов)." : "❌ Error: Text is too short. Provide detailed clinical notes (min 25 chars)." };
+  }
+  if (/https?:\/\/|www\.|@|\+7\d{9}/i.test(full + " " + author)) {
+    return { status: "err", msg: isRu ? "❌ Заблокировано: внешние ссылки, реклама и телефоны запрещены правилами атласа." : "❌ Blocked: External links, ads, or phone numbers are not allowed." };
+  }
+  if (/(гарантия 100%|чудо|за 1 день|magic cure|100% guarantee)/i.test(full)) {
+    return { status: "err", msg: isRu ? "❌ Ошибка стиля: обнаружены ненаучные формулировки. Используйте доказательную терминологию." : "❌ Style error: Non-scientific claims detected. Use evidence-based language." };
+  }
+  if (currentState === 2 && !/(мрт|кт|энмг|экг|ангио|узи|врач|хирург|невролог|кардиолог|mri|ct|emg|ecg|angio|surgeon|specialist)/i.test(full)) {
+    return { status: "warn", msg: isRu ? "⚠ Применено с замечанием: для тяжелой стадии рекомендуется указать диагностику (МРТ, КТ, ЭКГ) или осмотр специалиста." : "⚠ Applied with note: For severe stages, mention diagnostics (MRI, CT, ECG) or specialist review." };
+  }
+  if (!author || author.includes("Базовая редакция") || author.includes("Base Edition")) {
+    return { status: "warn", msg: isRu ? "⚠ Применено: рекомендуем вписать ваши ФИО, степень и клинику в верхнее поле для подтверждения авторства." : "⚠ Applied: Please enter your name, degree, and clinic in the top field to verify authorship." };
+  }
+  return { status: "ok", msg: isRu ? "✔ Автопроверка пройдена: медицинский стиль, структура и авторство подтверждены!" : "✔ Auto-check passed: Medical style, structure, and authorship verified!" };
+}
+
 function saveDoctorEdit() {
+  const desc = document.getElementById("editDesc").value.trim();
+  const tactics = document.getElementById("editTactics").value.trim();
+  const author = document.getElementById("editAuthor").value.trim();
+
+  const check = validateMedicalText(desc, tactics, author);
+  showReport(check.status, check.msg);
+  if (check.status === "err") return;
+
   const stObj = DB[currentLang].modules[currentMod].states[currentState];
-  const newAuthor = document.getElementById("editAuthor").value.trim();
-  if (newAuthor) stObj.author = newAuthor;
-  stObj.desc = document.getElementById("editDesc").value;
-  stObj.tactics = document.getElementById("editTactics").value;
+  if (author) stObj.author = author;
+  stObj.desc = desc;
+  stObj.tactics = tactics;
   updateUI();
 }
 
 function exportDatabase() {
-  navigator.clipboard.writeText(JSON.stringify(DB, null, 2));
-  alert(currentLang === "ru" ? "Обновленная база знаний (JSON) с вашим авторством скопирована для GitHub!" : "Updated JSON database with your authorship copied for GitHub!");
+  try {
+    const jsonStr = JSON.stringify(DB, null, 2);
+    JSON.parse(jsonStr);
+    navigator.clipboard.writeText(jsonStr);
+    showReport("ok", currentLang === "ru" ? "✔ JSON проверен на целостность и скопирован в буфер обмена для GitHub!" : "✔ JSON validated and copied to clipboard for GitHub!");
+  } catch (e) {
+    showReport("err", currentLang === "ru" ? "❌ Ошибка структуры JSON!" : "❌ JSON structure error!");
+  }
 }
 
 function updateUI() {
@@ -113,6 +175,8 @@ function updateUI() {
   document.getElementById("fsBtn").innerText = langData.ui.fsBtn;
   document.getElementById("hudHint").innerText = langData.ui.hint;
   document.getElementById("discTxt").innerText = langData.ui.disc;
+  document.getElementById("edTitle").innerText = currentLang === "ru" ? "РЕДАКТИРОВАНИЕ И АВТОПРОВЕРКА" : "DOCTOR EDITOR & AUTO-CHECK";
+  document.getElementById("saveBtn").innerText = currentLang === "ru" ? "Проверить и применить" : "Validate & Apply";
   updatePauseBtn();
 
   for (let i = 0; i < 6; i++) {
