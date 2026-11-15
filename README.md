@@ -1,43 +1,39 @@
-# OpenNeuroAtlas 3D (Axon Universe)
+# 🧠 OpenNeuroAtlas 3D
 
-**Бесплатный международный 3D-атлас нейроанатомии, кардиологии и флебологии с открытым исходным кодом (Open Source)**  
-**Free International Open-Source 3D Neuroanatomy, Cardiology & Phlebology Atlas**
+**OpenNeuroAtlas 3D** is an open-source interactive 3D medical atlas built with pure HTML5 Canvas and Vanilla JavaScript (zero external dependencies). Designed for physicians, medical students, and patients to visualize anatomy, pathology stages, and clinical decision-making.
 
-🌐 **Открыть живой 3D-портал / Live Demo:** https://sggerserg501-gif.github.io/axon-universe/
+## ✨ Key Features
 
----
+- **7 Interactive 3D Anatomical Modules:**
+  1. **Spine** (Healthy segment, Disc protrusion, Extrusion with root compression)
+  2. **Brain** (Normal neuroanatomy, Focal angiospasm, Intracerebral mass effect)
+  3. **Neuron & Axon** (Healthy conduction, Segmental demyelination, Synaptic block)
+  4. **Brain Vessels** (Circle of Willis, Functional spasm, Saccular aneurysm)
+  5. **Cervical Spine (C4–C6)** (Normal lordosis, Vertebral artery spasm, Cervical myelopathy)
+  6. **Heart & Vessels** (Normal rhythm & coronaries, Coronary spasm, Acute occlusion)
+  7. **Leg Veins & Varicose** (Healthy valves, Venous reflux, Varicose nodes)
+- **Multilingual Support:** Full UI and 3D callout translations in **English (EN)**, **Russian (RU)**, **Spanish (ES)**, **German (DE)**, and **Chinese (ZH)**.
+- **Doctor Mode & Auto-Validation:** Built-in clinical editor allowing specialists to propose updates, validate medical style, export JSON, and submit pull/issue requests directly to GitHub.
+- **Zero Dependencies:** Runs smoothly on desktop and mobile browsers without WebGL overhead or third-party libraries.
 
-### 🎯 Цель проекта / Project Mission
-Создать бесплатный, доступный во всех странах и наглядный 3D-инструмент для **профессоров, нейрохирургов, неврологов, кардиологов, флебологов, студентов-медиков и пациентов**. Платформа помогает понять строение нервной и сердечно-сосудистой систем на макро- и микроуровне, наглядно показывая границу между состояниями, которые лечатся консервативно (без операции), и случаями, требующими вмешательства хирурга.
+## 🚀 Quick Start
 
-*An open-source educational platform designed to help physicians, professors, students, and patients visualize the nervous and cardiovascular systems in 3D, distinguishing conservative care from cases requiring surgical review.*
+1. Clone the repository:
+   ```bash
+   git clone https://github.com
+   ```
+2. Open `index.html` in any modern web browser.
 
----
+## 🩺 Medical Contribution Guidelines
 
-### ✨ Возможности / Key Features
-* **Семь интерактивных 3D-модулей:**
-  1. **Позвоночник:** норма, протрузия и грыжа диска с радикулярной компрессией.
-  2. **Головной мозг:** полупрозрачный «рентген-режим» для просмотра зон ангиоспазма и внутримозговых очагов.
-  3. **Нейрон и Аксон:** сома, дендриты, сегментарная демиелинизация и блокада синапса.
-  4. **Сосуды мозга (Виллизиев круг):** пульсирующий кровоток, ангиоспазм и мешотчатая аневризма.
-  5. **Шейный отдел и артерии (C4–C6):** шейный лордоз, позвоночные артерии и компрессия спинного мозга.
-  6. **Сердце и сосуды:** ритмично бьющееся сердце, дуга аорты, спазм коронаров и ишемия миокарда.
-  7. **Вены ног и варикоз:** работа венозных клапанов, рефлюкс и варикозная трансформация вен голени.
-* **Поддержка 5 мировых языков:** мгновенное переключение интерфейса на **Русский (`RU`)**, **Английский (`EN`)**, **Испанский (`ES`)**, **Немецкий (`DE`)** и **Китайский (`ZH`)**.
-* **Режим врача, автопроверка и прямая отправка в GitHub:** встроенный редактор с 5-ступенчатым валидатором текста позволяет специалистам дополнять клинические описания, указывать своё авторство (ФИО и клинику) и в один клик отправлять проверенные правки в репозиторий через кнопку **«Отправить правку в GitHub ↗»**.
-* **Удобное 3D-управление:** вращение мышью или касанием, масштабирование, полноэкранный режим и кнопка **«Пауза ⏸»** для детального осмотра модели под любым углом.
+Physicians and researchers can contribute clinical refinements directly through the app:
+1. Click **Doctor Mode** in the top sidebar.
+2. Enter your **Full Name, Academic Degree, and Clinic/Institution**.
+3. Edit the clinical description or strategy and click **Validate & Apply**.
+4. Click **Submit Edit to GitHub ↗** to open a pre-filled clinical review issue.
 
----
+> **Disclaimer:** This project is for educational and visualization purposes only and does not replace professional medical advice, diagnosis, or treatment.
 
-### 🤝 Как принять участие / How to Contribute
-Мы приглашаем врачей, профессоров и разработчиков со всего мира развивать проект как открытую медицинскую энциклопедию:
-1. **Врачам и профессорам:** откройте сайт, выберите свой язык, нажмите кнопку **«Режим врача»**, впишите свои ФИО и клинику, уточните описание или тактику лечения, нажмите **«Проверить и применить»** и отправьте заявку одним нажатием кнопки **«Отправить правку в GitHub ↗»**.
-2. **Разработчикам:** вы можете предлагать улучшения 3D-движка (`engine.js`), добавлять новые анатомические отделы или переводы (`data.js`) через **Issues** и **Pull Requests**.
+## 📄 License
 
----
-
-### ⚠️ Медицинский дисклеймер / Medical Disclaimer
-Данный ресурс носит исключительно образовательный и ознакомительный характер. Визуализация не является медицинским диагнозом и не заменяет очную консультацию квалифицированного врача.
-
-### 📄 Лицензия / License
-Проект распространяется под свободной открытой лицензией **MIT License** — исходный код открыт для бесплатного использования, изучения и развития во всех странах.
+Distributed under the **MIT License**. Free to use, modify, and distribute with attribution.
