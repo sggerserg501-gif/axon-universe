@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>OpenNeuroAtlas 3D — Открытый нейрохирургический атлас</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<aside id="sidebar">
+  <div class="panel-top">
+    <div class="brand-row">
+      <span class="badge">OPEN SOURCE • MIT</span>
+      <div class="tools">
+        <button class="tool-btn" onclick="toggleEditor()" id="editBtn">Режим врача</button>
+        <button class="tool-btn" onclick="toggleLang()" id="langBtn">EN</button>
+      </div>
+    </div>
+    <h1>OpenNeuroAtlas 3D</h1>
+    <p class="subtitle" id="subTxt">Международная образовательная платформа нейроанатомии и клинической тактики.</p>
+
+    <div class="section-label" id="modLabel">1. АНАТОМИЧЕСКИЙ РАЗДЕЛ</div>
+    <div class="tabs">
+      <button class="tab active" onclick="selectModule(0, this)" id="tab0">Позвоночник</button>
+      <button class="tab" onclick="selectModule(1, this)" id="tab1">Головной мозг</button>
+      <button class="tab" onclick="selectModule(2, this)" id="tab2">Нейрон и Аксон</button>
+    </div>
+
+    <div class="section-label" id="stateLabel">2. КЛИНИЧЕСКАЯ СТАДИЯ</div>
+    <div class="states">
+      <button class="state-btn active" onclick="selectState(0, this)" id="st0"></button>
+      <button class="state-btn" onclick="selectState(1, this)" id="st1"></button>
+      <button class="state-btn" onclick="selectState(2, this)" id="st2"></button>
+    </div>
+
+    <div class="clinical-card" id="cardBox">
+      <div class="status-pill" id="pillTxt"></div>
+      <h3 id="cardTitle"></h3>
+      <p id="cardDesc"></p>
+      <div class="tactics-box">
+        <strong id="tacticsLabel">Рекомендуемая тактика:</strong>
+        <span id="cardTactics"></span>
+      </div>
+    </div>
+
+    <div id="editorBox" class="editor-box">
+      <div class="section-label">РЕДАКТИРОВАНИЕ ДЛЯ ВРАЧЕЙ (OPEN SOURCE)</div>
+      <textarea id="editDesc" placeholder="Описание патологии..."></textarea>
+      <textarea id="editTactics" placeholder="Клиническая тактика..."></textarea>
+      <div class="editor-actions">
+        <button class="save-btn" onclick="saveDoctorEdit()">Применить</button>
+        <button class="export-btn" onclick="exportDatabase()">Копировать JSON для GitHub</button>
+      </div>
+    </div>
+  </div>
+
+  <footer class="disclaimer" id="discTxt">
+    Образовательный проект с открытым исходным кодом (MIT). Визуализация предназначена для врачей, студентов и пациентов и не заменяет очную консультацию специалиста.
+  </footer>
+</aside>
+
+<main id="viewport">
+  <canvas id="sceneCanvas" width="1280" height="900"></canvas>
+  <div class="hud-bar">
+    <span class="hud-hint" id="hudHint">ЛКМ — вращение • Колесико — масштаб</span>
+    <button class="hud-btn" onclick="toggleFullscreen()" id="fsBtn">Во весь экран</button>
+    <button class="hud-btn" onclick="changeZoom(0.4)">+</button>
+    <button class="hud-btn" onclick="changeZoom(-0.4)">−</button>
+  </div>
+</main>
+
+<script src="data.js"></script>
+<script src="engine.js"></script>
+<script src="app.js"></script>
+</body>
+</html>
