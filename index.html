@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>OpenNeuroAtlas 3D — Открытый нейрохирургический атлас</title>
+<title>OpenNeuroAtlas 3D — Открытый медицинский 3D-атлас</title>
 <style>
 *{box-sizing:border-box;margin:0;padding:0;font-family:'Segoe UI',system-ui,sans-serif}
 body{background:#090d16;color:#e2e8f0;display:flex;height:100vh;overflow:hidden}
@@ -21,7 +21,6 @@ h1{font-size:21px;color:#f8fafc;margin-bottom:4px}
 .tab{padding:8px 4px;border-radius:6px;border:1px solid #374151;background:#1f2937;color:#9ca3af;cursor:pointer;font-weight:600;font-size:12px}
 .tab:hover{border-color:#60a5fa;color:#fff}
 .tab.active{background:#0284c7;color:#fff;border-color:#38bdf8}
-.tab-wide{grid-column:span 2}
 .states{display:flex;flex-direction:column;gap:6px;margin-bottom:14px}
 .state-btn{width:100%;background:#1f2937;border:1px solid #374151;color:#e5e7eb;padding:10px 12px;border-radius:6px;text-align:left;cursor:pointer;font-size:13px}
 .state-btn:hover{border-color:#60a5fa}
@@ -65,7 +64,8 @@ canvas{width:100%;height:100%;background:#0b1120;border:1px solid #1f2937;border
       <button class="tab" onclick="selectModule(1,this)" id="tab1">Головной мозг</button>
       <button class="tab" onclick="selectModule(2,this)" id="tab2">Нейрон и Аксон</button>
       <button class="tab" onclick="selectModule(3,this)" id="tab3">Сосуды мозга</button>
-      <button class="tab tab-wide" onclick="selectModule(4,this)" id="tab4">Шейный отдел и артерии</button>
+      <button class="tab" onclick="selectModule(4,this)" id="tab4">Шейный отдел</button>
+      <button class="tab" onclick="selectModule(5,this)" id="tab5">Сердце и сосуды</button>
     </div>
     <div class="section-label" id="stateLabel"></div>
     <div class="states">

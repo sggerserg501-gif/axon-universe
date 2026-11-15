@@ -164,7 +164,7 @@ function buildScene(mod, st, lang) {
       { x: -58, y: 15, z: -10, ox: -185, oy: 15, t: lang === "ru" ? "Виллизиев круг" : "Circle of Willis" },
       { x: -120, y: -15, z: 5, ox: -180, oy: -40, t: lang === "ru" ? "Средняя мозговая артерия" : "Middle Cerebral Artery" }
     );
-  } else {
+  } else if (mod === 4) {
     let pulse = (Date.now() * 0.004) % 1;
     [-95, 0, 95].forEach((y, idx) => {
       let zOff = (idx === 1) ? 10 : 0;
@@ -193,7 +193,7 @@ function buildScene(mod, st, lang) {
           pts.push({ x: side * 66, y: y, z: -18, r: 13, c: "#fef08a" });
       }
     });
-      if (st === 1) {
+       if (st === 1) {
       labels.push({ x: 66, y: 0, z: -18, ox: 55, oy: -25, t: lang === "ru" ? "Спазм позвоночной артерии" : "Vertebral Artery Spasm" });
     } else if (st === 2) {
       for (let dx = -10; dx <= 10; dx += 8)
@@ -206,6 +206,36 @@ function buildScene(mod, st, lang) {
       { x: -66, y: 40, z: -18, ox: -210, oy: 10, t: lang === "ru" ? "Позвоночная артерия" : "Vertebral Artery" },
       { x: -56, y: -95, z: 0, ox: -195, oy: -25, t: lang === "ru" ? "Позвонок C4" : "Vertebra C4" }
     );
+  } else {
+    let beat = 1 + Math.sin(Date.now() * 0.007) * 0.055;
+    for (let u = 0; u < 3.14; u += 0.2) {
+      for (let v = 0; v < 6.28; v += 0.2) {
+        let taper = 1 - (u / 3.14) * 0.55;
+        let hx = Math.sin(u) * Math.cos(v) * 68 * taper * beat + (u / 3.14) * 18;
+        let hy = -Math.cos(u) * 85 * beat + 15;
+        let hz = Math.sin(u) * Math.sin(v) * 58 * taper * beat;
+        let isIschemia = (st === 2 && hx > 10 && hy > 20 && hz > 10);
+        pts.push({ x: hx, y: hy, z: hz, r: 14, c: isIschemia ? "#475569" : "#e11d48" });
+      }
+    }
+    for (let a = 0; a <= 3.14; a += 0.16) {
+      pts.push({ x: -10 + Math.cos(a) * 34, y: -70 - Math.sin(a) * 48, z: -5, r: 16, c: "#ef4444" });
+    }
+    for (let y = -125; y <= -55; y += 11) {
+      pts.push({ x: -38, y: y, z: 10, r: 14, c: "#3b82f6" });
+    }
+    for (let t = 0; t <= 1; t += 0.07) {
+      let cx = 12 + t * 28, cy = -35 + t * 105, cz = 48 * (1 - t * 0.35);
+      let isSpasm = (st === 1 && t > 0.3 && t < 0.7);
+      let isBlocked = (st === 2 && t >= 0.45);
+      pts.push({ x: cx, y: cy, z: cz, r: isSpasm ? 5 : 9, c: isBlocked ? "#1e293b" : (isSpasm ? "#f59e0b" : "#facc15") });
+    }
+    labels.push(
+      { x: -10, y: -118, z: -5, ox: 55, oy: -25, t: lang === "ru" ? "Дуга аорты" : "Aortic Arch" },
+      { x: -38, y: -90, z: 10, ox: -195, oy: -20, t: lang === "ru" ? "Верхняя полая вена" : "Superior Vena Cava" },
+      { x: 25, y: 15, z: 42, ox: 65, oy: 10, t: st === 2 ? (lang === "ru" ? "Закупорка / Ишемия" : "Occlusion / Ischemia") : (st === 1 ? (lang === "ru" ? "Спазм коронара" : "Coronary Spasm") : (lang === "ru" ? "Коронарная артерия" : "Coronary Artery")) }
+    );
   }
   return { pts, labels };
 }
+
