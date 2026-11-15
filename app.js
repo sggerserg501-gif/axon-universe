@@ -73,6 +73,8 @@ function toggleFullscreen() {
 
 function saveDoctorEdit() {
   const stObj = DB[currentLang].modules[currentMod].states[currentState];
+  const newAuthor = document.getElementById("editAuthor").value.trim();
+  if (newAuthor) stObj.author = newAuthor;
   stObj.desc = document.getElementById("editDesc").value;
   stObj.tactics = document.getElementById("editTactics").value;
   updateUI();
@@ -80,7 +82,7 @@ function saveDoctorEdit() {
 
 function exportDatabase() {
   navigator.clipboard.writeText(JSON.stringify(DB, null, 2));
-  alert(currentLang === "ru" ? "Обновленная база знаний (JSON) скопирована для GitHub!" : "Updated JSON database copied for GitHub!");
+  alert(currentLang === "ru" ? "Обновленная база знаний (JSON) с вашим авторством скопирована для GitHub!" : "Updated JSON database with your authorship copied for GitHub!");
 }
 
 function updateUI() {
@@ -90,6 +92,7 @@ function updateUI() {
   document.getElementById("modLabel").innerText = langData.ui.modLabel;
   document.getElementById("stateLabel").innerText = langData.ui.stateLabel;
   document.getElementById("tacticsLabel").innerText = langData.ui.tacticsLabel;
+  document.getElementById("authorLabel").innerText = langData.ui.authorLabel;
   document.getElementById("editBtn").innerText = langData.ui.editBtn;
   document.getElementById("fsBtn").innerText = langData.ui.fsBtn;
   document.getElementById("hudHint").innerText = langData.ui.hint;
@@ -111,8 +114,10 @@ function updateUI() {
   document.getElementById("cardTitle").innerText = info.title;
   document.getElementById("cardDesc").innerText = info.desc;
   document.getElementById("cardTactics").innerText = info.tactics;
+  document.getElementById("cardAuthor").innerText = info.author || "";
   document.getElementById("cardBox").style.borderLeftColor = info.color;
 
+  document.getElementById("editAuthor").value = info.author || "";
   document.getElementById("editDesc").value = info.desc;
   document.getElementById("editTactics").value = info.tactics;
 }
