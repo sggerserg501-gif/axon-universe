@@ -95,7 +95,7 @@ function updateUI() {
   document.getElementById("hudHint").innerText = langData.ui.hint;
   document.getElementById("discTxt").innerText = langData.ui.disc;
 
-  for (let i = 0; i < 4; i++) {
+  for (let i = 0; i < 5; i++) {
     document.getElementById("tab" + i).innerText = langData.ui.tabs[i];
   }
   for (let i = 0; i < 3; i++) {

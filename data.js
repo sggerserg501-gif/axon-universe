@@ -4,7 +4,7 @@ const DB = {
       sub: "Международная образовательная платформа нейроанатомии и клинической тактики.",
       modLabel: "1. АНАТОМИЧЕСКИЙ РАЗДЕЛ",
       stateLabel: "2. КЛИНИЧЕСКАЯ СТАДИЯ",
-      tabs: ["Позвоночник", "Головной мозг", "Нейрон и Аксон", "Сосуды мозга"],
+      tabs: ["Позвоночник", "Головной мозг", "Нейрон и Аксон", "Сосуды мозга", "Шейный отдел и артерии"],
       tacticsLabel: "Клиническая тактика:",
       editBtn: "Режим врача",
       fsBtn: "Во весь экран",
@@ -39,9 +39,17 @@ const DB = {
       {
         buttons: ["1. Норма Виллизиева круга", "2. Функциональный спазм (Без операции)", "3. Аневризма / Окклюзия (Хирургия)"],
         states: [
-          { pill: "Норма кровотока", color: "#38bdf8", title: "Замкнутый Виллизиев круг основания мозга", desc: "Внутренние сонные, базилярная и мозговые артерии образуют единое кольцо, обеспечивая равномерный пульсирующий кровоток (белые импульсы).", tactics: "Хирургия не требуется. Поддержание нормального артериального давления и липидного профиля." },
-          { pill: "Консервативное лечение", color: "#f59e0b", title: "Ангиоспазм или начальный стеноз артерии", desc: "Локальное сужение просвета средней мозговой артерии (оранжевая зона). Коллатеральный кровоток по Виллизиеву кругу компенсирует питание мозга.", tactics: "Лечится консервативно без операции: спазмолитики, антиагреганты, контроль АД и дозированные нагрузки." },
-          { pill: "Срочная нейрохирургия", color: "#ef4444", title: "Мешотчатая аневризма / Критический тромбоз", desc: "Выпячивание истонченной стенки артерии (красный купол) с высоким риском разрыва или полной закупорки сосуда.", tactics: "Требуется КТ-ангиография и срочная консультация эндоваскулярного нейрохирурга (клипирование или эмболизация)." }
+          { pill: "Норма кровотока", color: "#38bdf8", title: "Замкнутый Виллизиев круг основания мозга", desc: "Внутренние сонные, базилярная и мозговые артерии образуют единое кольцо с равномерным пульсирующим кровотоком.", tactics: "Хирургия не требуется. Поддержание нормального артериального давления." },
+          { pill: "Консервативное лечение", color: "#f59e0b", title: "Ангиоспазм или начальный стеноз артерии", desc: "Локальное сужение просвета средней мозговой артерии (оранжевая зона). Коллатерали компенсируют кровоток.", tactics: "Лечится консервативно без операции: спазмолитики, антиагреганты и контроль АД." },
+          { pill: "Срочная нейрохирургия", color: "#ef4444", title: "Мешотчатая аневризма / Критический тромбоз", desc: "Выпячивание истонченной стенки артерии (красный купол) с высоким риском разрыва или окклюзии.", tactics: "Требуется КТ-ангиография и срочная консультация эндоваскулярного нейрохирурга." }
+        ]
+      },
+      {
+        buttons: ["1. Норма шеи и артерий (C4–C6)", "2. Синдром позвоночной артерии (Терапия)", "3. Шейная грыжа с миелопатией (Хирургия)"],
+        states: [
+          { pill: "Норма", color: "#38bdf8", title: "Анатомическая норма шейного отдела (C4–C6)", desc: "Три шейных позвонка сохраняют естественный изгиб, диски (синие) не сдавливают спинной мозг, а обе позвоночные артерии (красные) свободно несут кровь к мозгу.", tactics: "Операция не нужна. Рекомендуется гимнастика для глубоких сгибателей шеи и эргономика рабочего места." },
+          { pill: "Консервативное лечение", color: "#f59e0b", title: "Вертеброгенный спазм и поджатие артерии", desc: "Умеренное смещение и спазм (оранжевая зона) вызывают локальное сужение правой позвоночной артерии, что может давать головокружение или шум в ушах.", tactics: "В большинстве случаев лечится без операции: мягкая мануальная терапия, миорелаксанты, сосудистая терапия и ЛФК." },
+          { pill: "Консультация нейрохирурга", color: "#ef4444", title: "Крупная шейная грыжа со сдавливанием спинного мозга", desc: "Выпадение фрагмента диска (красный очаг) в узкий шейный канал с прямой компрессией спинного мозга (риск цервикальной миелопатии).", tactics: "Требуется срочное МРТ шейного отдела и очный осмотр нейрохирурга (решается вопрос о передней декомпрессии и стабилизации)." }
         ]
       }
     ]
@@ -51,7 +59,7 @@ const DB = {
       sub: "International open-source platform for neuroanatomy and clinical decision-making.",
       modLabel: "1. ANATOMICAL MODULE",
       stateLabel: "2. CLINICAL STAGE",
-      tabs: ["Spine", "Brain", "Neuron & Axon", "Brain Vessels"],
+      tabs: ["Spine", "Brain", "Neuron & Axon", "Brain Vessels", "Cervical Spine & Arteries"],
       tacticsLabel: "Clinical Strategy:",
       editBtn: "Doctor Mode",
       fsBtn: "Fullscreen",
@@ -62,7 +70,7 @@ const DB = {
       {
         buttons: ["1. Anatomical Norm", "2. Disc Protrusion (Non-surgical)", "3. Herniation (Surgical Review)"],
         states: [
-          { pill: "Normal", color: "#38bdf8", title: "Healthy Spinal Motion Segment", desc: "Intervertebral disc (blue) maintains height. Spinal cord and roots (yellow) are free.", tactics: "No surgery required. Maintain core strength." },
+          { pill: "Normal", color: "#38bdf8", title: "Healthy Spinal Motion Segment", desc: "Intervertebral disc (blue) maintains height. Spinal cord and roots (yellow) are free.", tactics: "No surgery required." },
           { pill: "Conservative Care", color: "#f59e0b", title: "Early Disc Protrusion", desc: "Mild annular bulge (orange) without severe root compression.", tactics: "85–90% recover without surgery via targeted physical therapy." },
           { pill: "Surgical Evaluation", color: "#ef4444", title: "Disc Extrusion with Root Compression", desc: "Herniated nucleus (red) compresses the nerve root directly.", tactics: "Requires MRI correlation and neurosurgical consultation." }
         ]
@@ -86,11 +94,21 @@ const DB = {
       {
         buttons: ["1. Healthy Circle of Willis", "2. Functional Angiospasm (Therapy)", "3. Aneurysm / Occlusion (Surgery)"],
         states: [
-          { pill: "Normal Flow", color: "#38bdf8", title: "Intact Circle of Willis", desc: "Internal carotid, basilar, and cerebral arteries form a closed ring ensuring steady pulsatile blood flow.", tactics: "No surgery required. Maintain healthy blood pressure." },
-          { pill: "Conservative Care", color: "#f59e0b", title: "Focal Angiospasm / Mild Stenosis", desc: "Localized narrowing of the middle cerebral artery (orange). Collateral flow compensates perfusion.", tactics: "Managed conservatively without surgery using antispasmodics and medical therapy." },
-          { pill: "Urgent Neurosurgery", color: "#ef4444", title: "Saccular Aneurysm / Critical Occlusion", desc: "Bulging weakened arterial wall (red dome) with high rupture or stroke risk.", tactics: "Requires CT angiography and urgent endovascular/neurosurgical evaluation." }
+           { pill: "Normal Flow", color: "#38bdf8", title: "Intact Circle of Willis", desc: "Internal carotid, basilar, and cerebral arteries form a closed ring ensuring steady pulsatile blood flow.", tactics: "No surgery required." },
+         
+          { pill: "Conservative Care", color: "#f59e0b", title: "Focal Angiospasm / Mild Stenosis", desc: "Localized narrowing of the middle cerebral artery (orange). Collateral flow compensates perfusion.", tactics: "Managed conservatively without surgery using antispasmodics." },
+          { pill: "Urgent Neurosurgery", color: "#ef4444", title: "Saccular Aneurysm / Critical Occlusion", desc: "Bulging weakened arterial wall (red dome) with high rupture or stroke risk.", tactics: "Requires CT angiography and urgent neurosurgical evaluation." }
+        ]
+      },
+      {
+        buttons: ["1. Healthy Cervical Spine (C4–C6)", "2. Vertebral Artery Spasm (Therapy)", "3. Cervical Myelopathy (Surgery)"],
+        states: [
+          { pill: "Normal", color: "#38bdf8", title: "Normal Cervical Spine & Vertebral Arteries", desc: "Cervical vertebrae (C4–C6) maintain natural lordosis, discs (blue) are intact, and both vertebral arteries (red) carry steady blood flow.", tactics: "No surgery required. Maintain neck muscle balance and posture." },
+          { pill: "Conservative Care", color: "#f59e0b", title: "Cervical Spasm & Vertebral Artery Compression", desc: "Muscle spasm and mild instability (orange) narrow the right vertebral artery lumen, causing dizziness or tension headaches.", tactics: "Managed without surgery via physical therapy, muscle relaxants, and vascular care." },
+          { pill: "Surgical Evaluation", color: "#ef4444", title: "Large Cervical Herniation & Cord Compression", desc: "Disc extrusion (red) narrows the cervical canal and presses directly on the spinal cord (cervical myelopathy risk).", tactics: "Requires urgent cervical MRI and neurosurgical evaluation (ACDF / decompression)." }
         ]
       }
     ]
   }
 };
+

@@ -50,18 +50,9 @@ canvas:active { cursor: grabbing; }
 .hud-hint { font-size: 12px; color: #94a3b8; margin-right: 6px; }
 .hud-btn { background: #1f2937; color: #f8fafc; border: 1px solid #4b5563; padding: 5px 12px; border-radius: 16px; cursor: pointer; font-weight: 600; font-size: 12px; transition: 0.2s; }
 .hud-btn:hover { background: #0284c7; border-color: #38bdf8; }
-canvas.addEventListener("touchstart", e => {
-  if (e.touches.length === 1) {
-    isDragging = true;
-    lastX = e.touches[0].clientX;
-    lastY = e.touches[0].clientY;
-  }
-}, { passive: true });
-window.addEventListener("touchend", () => { isDragging = false; });
-canvas.addEventListener("touchmove", e => {
-  if (!isDragging || e.touches.length !== 1) return;
-  rotY += (e.touches[0].clientX - lastX) * 0.008;
-  rotX += (e.touches[0].clientY - lastY) * 0.008;
-  lastX = e.touches[0].clientX;
-  lastY = e.touches[0].clientY;
-}, { passive: true });
+
+@media (max-width: 850px) {
+  body { flex-direction: column; overflow-y: auto; height: auto; }
+  #sidebar { width: 100%; min-width: 100%; border-right: none; border-bottom: 1px solid #1f2937; }
+  #viewport { height: 65vh; min-height: 420px; }
+}

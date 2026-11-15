@@ -129,7 +129,7 @@ function buildScene(mod, st, lang) {
       { x: 10, y: -15, z: 0, ox: 20, oy: -65, t: lang === "ru" ? "Аксон и миелин" : "Axon & Myelin" },
       { x: 168, y: -32, z: 0, ox: 35, oy: -50, t: lang === "ru" ? "Синапс" : "Synapse" }
     );
-  } else {
+  } else if (mod === 3) {
     let pulse = (Date.now() * 0.004) % 1;
     for (let y = 130; y >= 35; y -= 8) {
       pts.push({ x: 0, y: y, z: -30, r: 14, c: "#ef4444" });
@@ -163,6 +163,48 @@ function buildScene(mod, st, lang) {
       { x: 0, y: 115, z: -30, ox: 55, oy: 20, t: lang === "ru" ? "Базилярная артерия" : "Basilar Artery" },
       { x: -58, y: 15, z: -10, ox: -185, oy: 15, t: lang === "ru" ? "Виллизиев круг" : "Circle of Willis" },
       { x: -120, y: -15, z: 5, ox: -180, oy: -40, t: lang === "ru" ? "Средняя мозговая артерия" : "Middle Cerebral Artery" }
+    );
+  } else {
+    let pulse = (Date.now() * 0.004) % 1;
+    [-95, 0, 95].forEach((y, idx) => {
+      let zOff = (idx === 1) ? 10 : 0;
+      for (let a = 0; a < 6.28; a += 0.26)
+        for (let h = -16; h <= 16; h += 10)
+          pts.push({ x: Math.cos(a) * 56, y: y + h, z: zOff + Math.sin(a) * 48, r: 12, c: "#cbd5e1" });
+      for (let z = -48; z >= -112; z -= 12)
+        pts.push({ x: 0, y: y, z: zOff + z, r: 13, c: "#94a3b8" });
+      [-1, 1].forEach(side => {
+        for (let x = 48; x <= 76; x += 10)
+          pts.push({ x: side * x, y: y, z: zOff - 18, r: 10, c: "#94a3b8" });
+      });
+    });
+    [-48, 48].forEach(dy => {
+      for (let a = 0; a < 6.28; a += 0.24)
+        for (let h = -9; h <= 9; h += 9)
+          pts.push({ x: Math.cos(a) * 54, y: dy + h, z: 5 + Math.sin(a) * 46, r: 12, c: "#38bdf8" });
+    });
+    for (let y = -135; y <= 135; y += 10)
+      pts.push({ x: 0, y: y, z: -65, r: 16, c: "#facc15" });
+    [-1, 1].forEach(side => {
+      for (let y = 135; y >= -135; y -= 10) {
+        let isSpasm = (st === 1 && side === 1 && y > -45 && y < 45);
+        pts.push({ x: side * 66, y: y, z: -18, r: isSpasm ? 6 : 11, c: isSpasm ? "#f59e0b" : "#ef4444" });
+        if (Math.abs(((135 - y) / 270) - pulse) < 0.06)
+          pts.push({ x: side * 66, y: y, z: -18, r: 13, c: "#fef08a" });
+      }
+    });
+      if (st === 1) {
+      labels.push({ x: 66, y: 0, z: -18, ox: 55, oy: -25, t: lang === "ru" ? "Спазм позвоночной артерии" : "Vertebral Artery Spasm" });
+    } else if (st === 2) {
+      for (let dx = -10; dx <= 10; dx += 8)
+        for (let dy = -8; dy <= 8; dy += 8)
+          pts.push({ x: dx, y: -48 + dy, z: -52, r: 19, c: "#ef4444" });
+      labels.push({ x: 0, y: -48, z: -52, ox: 65, oy: -35, t: lang === "ru" ? "Шейная грыжа (Миелопатия)" : "Cervical Herniation" });
+    }
+    labels.push(
+      { x: 0, y: -130, z: -65, ox: 55, oy: -30, t: lang === "ru" ? "Шейный отдел спинного мозга" : "Cervical Spinal Cord" },
+      { x: -66, y: 40, z: -18, ox: -210, oy: 10, t: lang === "ru" ? "Позвоночная артерия" : "Vertebral Artery" },
+      { x: -56, y: -95, z: 0, ox: -195, oy: -25, t: lang === "ru" ? "Позвонок C4" : "Vertebra C4" }
     );
   }
   return { pts, labels };
