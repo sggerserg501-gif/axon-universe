@@ -3,7 +3,7 @@
 **Бесплатный международный 3D-атлас нейроанатомии, кардиологии и флебологии с открытым исходным кодом (Open Source)**  
 **Free International Open-Source 3D Neuroanatomy, Cardiology & Phlebology Atlas**
 
-🌐 **Открыть живой 3D-портал / Live Demo:** https://github.io
+🌐 **Открыть живой 3D-портал / Live Demo:** https://sggerserg501-gif.github.io/axon-universe/
 
 ---
 
