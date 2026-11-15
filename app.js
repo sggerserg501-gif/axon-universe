@@ -7,7 +7,7 @@ function renderLoop() {
   ctx.clearRect(0, 0, 1280, 900);
   if (!isDragging && !isPaused) rotY += 0.004;
 
-  const scene = buildScene(currentMod, currentState, currentLang);
+  const scene = buildScene(currentMod, currentState, currentLang === "ru" ? "ru" : "en");
   const projected = scene.pts.map(o => {
     const q = project3D(o.x, o.y, o.z);
     return { ...q, r: o.r * q.sc, c: o.c };
@@ -59,8 +59,8 @@ function selectState(idx, el) {
   updateUI();
 }
 
-function toggleLang() {
-  currentLang = currentLang === "ru" ? "en" : "ru";
+function changeLang(langCode) {
+  currentLang = langCode;
   hideReport();
   updateUI();
 }
@@ -73,11 +73,14 @@ function togglePause() {
 function updatePauseBtn() {
   const btn = document.getElementById("pauseBtn");
   if (!btn) return;
-  if (currentLang === "ru") {
-    btn.innerText = isPaused ? "Вращать ▶" : "Пауза ⏸";
-  } else {
-    btn.innerText = isPaused ? "Rotate ▶" : "Pause ⏸";
-  }
+  const labels = {
+    ru: isPaused ? "Вращать ▶" : "Пауза ⏸",
+    en: isPaused ? "Rotate ▶" : "Pause ⏸",
+    es: isPaused ? "Rotar ▶" : "Pausa ⏸",
+    de: isPaused ? "Drehen ▶" : "Pause ⏸",
+    zh: isPaused ? "旋转 ▶" : "暂停 ⏸"
+  };
+  btn.innerText = labels[currentLang] || labels.en;
 }
 
 function toggleEditor() {
@@ -113,27 +116,23 @@ function showReport(type, text) {
     rep.style.color = "#f87171";
   }
 }
-
 function validateMedicalText(desc, tactics, author) {
   const isRu = currentLang === "ru";
   const full = (desc + " " + tactics).toLowerCase();
 
-  if (desc.length < 25 || tactics.length < 20) {
-    return { status: "err", msg: isRu ? "❌ Ошибка: слишком короткий текст. Опишите клинику и тактику подробнее (минимум 25 символов)." : "❌ Error: Text is too short. Provide detailed clinical notes (min 25 chars)." };
+  if (desc.length < 20 || tactics.length < 15) {
+    return { status: "err", msg: isRu ? "❌ Ошибка: слишком короткий текст. Опишите клинику и тактику подробнее." : "❌ Error: Text is too short. Please provide detailed clinical notes." };
   }
   if (/https?:\/\/|www\.|@|\+7\d{9}/i.test(full + " " + author)) {
     return { status: "err", msg: isRu ? "❌ Заблокировано: внешние ссылки, реклама и телефоны запрещены правилами атласа." : "❌ Blocked: External links, ads, or phone numbers are not allowed." };
   }
   if (/(гарантия 100%|чудо|за 1 день|magic cure|100% guarantee)/i.test(full)) {
-    return { status: "err", msg: isRu ? "❌ Ошибка стиля: обнаружены ненаучные формулировки. Используйте доказательную терминологию." : "❌ Style error: Non-scientific claims detected. Use evidence-based language." };
+    return { status: "err", msg: isRu ? "❌ Ошибка стиля: обнаружены ненаучные формулировки." : "❌ Style error: Non-scientific claims detected." };
   }
-  if (currentState === 2 && !/(мрт|кт|энмг|экг|ангио|узи|уздс|врач|хирург|невролог|кардиолог|флеболог|mri|ct|emg|ecg|angio|dus|surgeon|specialist)/i.test(full)) {
-    return { status: "warn", msg: isRu ? "⚠ Применено с замечанием: для тяжелой стадии рекомендуется указать диагностику (МРТ, КТ, УЗДС, ЭКГ) или осмотр специалиста." : "⚠ Applied with note: For severe stages, mention diagnostics (MRI, CT, DUS, ECG) or specialist review." };
+  if (!author || /(Базовая редакция|Base Edition|Edición Base|Basisausgabe|基础版)/i.test(author)) {
+    return { status: "warn", msg: isRu ? "⚠ Применено: впишите ваши ФИО, степень и клинику в верхнее поле для подтверждения авторства." : "⚠ Applied: Please enter your name, degree, and clinic above to verify authorship." };
   }
-  if (!author || author.includes("Базовая редакция") || author.includes("Base Edition")) {
-    return { status: "warn", msg: isRu ? "⚠ Применено: рекомендуем вписать ваши ФИО, степень и клинику в верхнее поле для подтверждения авторства." : "⚠ Applied: Please enter your name, degree, and clinic in the top field to verify authorship." };
-  }
-  return { status: "ok", msg: isRu ? "✔ Автопроверка пройдена: медицинский стиль, структура и авторство подтверждены!" : "✔ Auto-check passed: Medical style, structure, and authorship verified!" };
+  return { status: "ok", msg: isRu ? "✔ Автопроверка пройдена: медицинский стиль и авторство подтверждены!" : "✔ Auto-check passed: Medical style and authorship verified!" };
 }
 
 function saveDoctorEdit() {
@@ -157,15 +156,24 @@ function exportDatabase() {
     const jsonStr = JSON.stringify(DB, null, 2);
     JSON.parse(jsonStr);
     navigator.clipboard.writeText(jsonStr);
-    showReport("ok", currentLang === "ru" ? "✔ JSON проверен на целостность и скопирован в буфер обмена для GitHub!" : "✔ JSON validated and copied to clipboard for GitHub!");
+    showReport("ok", currentLang === "ru" ? "✔ JSON проверен и скопирован в буфер обмена!" : "✔ JSON validated and copied to clipboard!");
   } catch (e) {
-    showReport("err", currentLang === "ru" ? "❌ Ошибка структуры JSON!" : "❌ JSON structure error!");
+    showReport("err", "❌ JSON error!");
   }
 }
 
-function updateUI() {
+function sendToGitHub() {
   const langData = DB[currentLang];
-  document.getElementById("langBtn").innerText = currentLang === "ru" ? "EN" : "RU";
+  const modName = langData.ui.tabs[currentMod];
+  const info = langData.modules[currentMod].states[currentState];
+  const title = encodeURIComponent("[Medical Edit - " + currentLang.toUpperCase() + "] " + modName + " - " + info.title);
+  const body = encodeURIComponent("Author / Clinic: " + info.author + "\nLanguage: " + currentLang.toUpperCase() + "\nModule: " + modName + "\n\nClinical Description:\n" + info.desc + "\n\nClinical Strategy:\n" + info.tactics);
+  const url = "https://github.com" + "/sggerserg501-gif/axon-universe/issues/new?title=" + title + "&body=" + body;
+  window.open(url, "_blank");
+}
+
+function updateUI() {
+  const langData = DB[currentLang] || DB.en;
   document.getElementById("subTxt").innerText = langData.ui.sub;
   document.getElementById("modLabel").innerText = langData.ui.modLabel;
   document.getElementById("stateLabel").innerText = langData.ui.stateLabel;
@@ -175,8 +183,14 @@ function updateUI() {
   document.getElementById("fsBtn").innerText = langData.ui.fsBtn;
   document.getElementById("hudHint").innerText = langData.ui.hint;
   document.getElementById("discTxt").innerText = langData.ui.disc;
-  document.getElementById("edTitle").innerText = currentLang === "ru" ? "РЕДАКТИРОВАНИЕ И АВТОПРОВЕРКА" : "DOCTOR EDITOR & AUTO-CHECK";
-  document.getElementById("saveBtn").innerText = currentLang === "ru" ? "Проверить и применить" : "Validate & Apply";
+
+  const edTitles = { ru: "РЕДАКТИРОВАНИЕ И АВТОПРОВЕРКА", en: "DOCTOR EDITOR & AUTO-CHECK", es: "EDITOR MÉDICO Y VALIDACIÓN", de: "ARZT-EDITOR & PRÜFUNG", zh: "医生编辑与自动审核" };
+  const saveBtns = { ru: "Проверить и применить", en: "Validate & Apply", es: "Validar y Aplicar", de: "Prüfen & Anwenden", zh: "审核并应用" };
+  const ghBtns = { ru: "Отправить правку в GitHub ↗", en: "Submit Edit to GitHub ↗", es: "Enviar edición a GitHub ↗", de: "Änderung an GitHub senden ↗", zh: "提交修订至 GitHub ↗" };
+
+  document.getElementById("edTitle").innerText = edTitles[currentLang] || edTitles.en;
+  document.getElementById("saveBtn").innerText = saveBtns[currentLang] || saveBtns.en;
+  document.getElementById("ghBtn").innerText = ghBtns[currentLang] || ghBtns.en;
   updatePauseBtn();
 
   for (let i = 0; i < 7; i++) {
