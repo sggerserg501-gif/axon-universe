@@ -11,9 +11,9 @@ body{background:#090d16;color:#e2e8f0;display:flex;height:100vh;overflow:hidden}
 #sidebar.hidden{display:none}
 .brand-row{display:flex;justify-content:space-between;align-items:center;margin-bottom:12px}
 .badge{background:rgba(16,185,129,0.15);color:#34d399;border:1px solid #059669;font-size:11px;font-weight:700;padding:3px 8px;border-radius:4px}
-.tools{display:flex;gap:6px}
-.tool-btn{background:#1f2937;color:#cbd5e1;border:1px solid #374151;padding:5px 10px;border-radius:5px;cursor:pointer;font-size:11px;font-weight:600}
-.tool-btn:hover{background:#374151;color:#fff}
+.tools{display:flex;gap:6px;align-items:center}
+.tool-btn,.lang-select{background:#1f2937;color:#cbd5e1;border:1px solid #374151;padding:5px 9px;border-radius:5px;cursor:pointer;font-size:11px;font-weight:600}
+.tool-btn:hover,.lang-select:hover{background:#374151;color:#fff}
 h1{font-size:21px;color:#f8fafc;margin-bottom:4px}
 .subtitle{font-size:12px;color:#94a3b8;line-height:1.4;margin-bottom:14px}
 .section-label{font-size:10px;font-weight:700;color:#64748b;letter-spacing:0.8px;margin-bottom:8px}
@@ -38,9 +38,10 @@ h1{font-size:21px;color:#f8fafc;margin-bottom:4px}
 .editor-box input{width:100%;background:#1f2937;color:#fff;border:1px solid #374151;border-radius:4px;padding:6px;font-size:12px;margin-bottom:6px}
 .editor-box textarea{width:100%;height:48px;background:#1f2937;color:#fff;border:1px solid #374151;border-radius:4px;padding:6px;font-size:12px;margin-bottom:6px}
 .check-report{display:none;font-size:11px;padding:7px 9px;border-radius:5px;margin-bottom:7px;line-height:1.4}
-.editor-actions{display:flex;gap:6px}
-.save-btn{flex:1;background:#059669;color:#fff;border:none;padding:7px;border-radius:5px;cursor:pointer;font-weight:600;font-size:12px}
-.export-btn{flex:1;background:#374151;color:#fff;border:none;padding:7px;border-radius:5px;cursor:pointer;font-weight:600;font-size:12px}
+.editor-actions{display:flex;gap:5px;flex-wrap:wrap}
+.save-btn{flex:1;background:#059669;color:#fff;border:none;padding:7px 5px;border-radius:5px;cursor:pointer;font-weight:600;font-size:11px}
+.export-btn{flex:1;background:#374151;color:#fff;border:none;padding:7px 5px;border-radius:5px;cursor:pointer;font-weight:600;font-size:11px}
+.gh-btn{width:100%;margin-top:5px;background:#0284c7;color:#fff;border:none;padding:7px;border-radius:5px;cursor:pointer;font-weight:600;font-size:11px}
 .disclaimer{font-size:11px;color:#64748b;border-top:1px solid #1f2937;padding-top:10px;margin-top:10px;line-height:1.35}
 #viewport{flex:1;position:relative;display:flex;align-items:center;justify-content:center;padding:12px;background:#090d16}
 canvas{width:100%;height:100%;background:#0b1120;border:1px solid #1f2937;border-radius:12px;cursor:grab}
@@ -58,7 +59,13 @@ canvas{width:100%;height:100%;background:#0b1120;border:1px solid #1f2937;border
       <span class="badge">OPEN SOURCE • MIT</span>
       <div class="tools">
         <button class="tool-btn" onclick="toggleEditor()" id="editBtn">Режим врача</button>
-        <button class="tool-btn" onclick="toggleLang()" id="langBtn">EN</button>
+        <select class="lang-select" id="langSelect" onchange="changeLang(this.value)">
+          <option value="ru">RU • Русский</option>
+          <option value="en">EN • English</option>
+          <option value="es">ES • Español</option>
+          <option value="de">DE • Deutsch</option>
+          <option value="zh">ZH • 中文</option>
+        </select>
       </div>
     </div>
     <h1>OpenNeuroAtlas 3D</h1>
@@ -94,8 +101,9 @@ canvas{width:100%;height:100%;background:#0b1120;border:1px solid #1f2937;border
       <div id="checkReport" class="check-report"></div>
       <div class="editor-actions">
         <button class="save-btn" onclick="saveDoctorEdit()" id="saveBtn">Проверить и применить</button>
-        <button class="export-btn" onclick="exportDatabase()">JSON для GitHub</button>
+        <button class="export-btn" onclick="exportDatabase()">JSON</button>
       </div>
+      <button class="gh-btn" onclick="sendToGitHub()" id="ghBtn">Отправить правку в GitHub ↗</button>
     </div>
   </div>
   <footer class="disclaimer" id="discTxt"></footer>
