@@ -1,4 +1,4 @@
-let rotX = 0.22, rotY = -0.35, zoom = 4.3, isDragging = false, lastX = 0, lastY = 0;
+let rotX = 0.25, rotY = -0.35, zoom = 4.3, isDragging = false, lastX = 0, lastY = 0;
 const canvas = document.getElementById("sceneCanvas");
 const ctx = canvas.getContext("2d");
 
@@ -14,6 +14,22 @@ canvas.addEventListener("wheel", e => {
   e.preventDefault();
   zoom = Math.min(6.5, Math.max(1.5, zoom - e.deltaY * 0.002));
 }, { passive: false });
+
+canvas.addEventListener("touchstart", e => {
+  if (e.touches.length === 1) {
+    isDragging = true;
+    lastX = e.touches[0].clientX;
+    lastY = e.touches[0].clientY;
+  }
+}, { passive: true });
+window.addEventListener("touchend", () => { isDragging = false; });
+canvas.addEventListener("touchmove", e => {
+  if (!isDragging || e.touches.length !== 1) return;
+  rotY += (e.touches[0].clientX - lastX) * 0.008;
+  rotX += (e.touches[0].clientY - lastY) * 0.008;
+  lastX = e.touches[0].clientX;
+  lastY = e.touches[0].clientY;
+}, { passive: true });
 
 function changeZoom(delta) {
   zoom = Math.min(6.5, Math.max(1.5, zoom + delta));
@@ -82,7 +98,7 @@ function buildScene(mod, st, lang) {
             pts.push({ x: 32 + dx, y: -15 + dy, z: 18 + dz, r: st === 2 ? 24 : 17, c: st === 2 ? "#ef4444" : "#f59e0b" });
       labels.push({ x: 32, y: -15, z: 18, ox: 80, oy: -10, t: st === 2 ? (lang === "ru" ? "Объемный очаг" : "Focal Lesion") : (lang === "ru" ? "Зона ангиоспазма" : "Angiospasm Zone") });
     }
-  } else {
+  } else if (mod === 2) {
     for (let u = 0; u < 3.14; u += 0.28)
       for (let v = 0; v < 6.28; v += 0.28)
         pts.push({ x: -125 + Math.sin(u) * Math.cos(v) * 34, y: Math.cos(u) * 34, z: Math.sin(u) * Math.sin(v) * 34, r: 14, c: "#a855f7" });
@@ -113,21 +129,41 @@ function buildScene(mod, st, lang) {
       { x: 10, y: -15, z: 0, ox: 20, oy: -65, t: lang === "ru" ? "Аксон и миелин" : "Axon & Myelin" },
       { x: 168, y: -32, z: 0, ox: 35, oy: -50, t: lang === "ru" ? "Синапс" : "Synapse" }
     );
+  } else {
+    let pulse = (Date.now() * 0.004) % 1;
+    for (let y = 130; y >= 35; y -= 8) {
+      pts.push({ x: 0, y: y, z: -30, r: 14, c: "#ef4444" });
+      if (Math.abs(((130 - y) / 95) - pulse) < 0.08) pts.push({ x: 0, y: y, z: -30, r: 16, c: "#fef08a" });
+    }
+    for (let a = 0; a < 6.28; a += 0.14) {
+      let cx0 = Math.sin(a) * 58, cz0 = Math.cos(a) * 65 - 10;
+      let isSpasm = (st === 1 && a > 1.1 && a < 2.1);
+      pts.push({ x: cx0, y: 15, z: cz0, r: isSpasm ? 7 : 12, c: isSpasm ? "#f59e0b" : "#dc2626" });
+    }
+    [-1, 1].forEach(side => {
+      for (let t = 0; t <= 1; t += 0.08) {
+        let bx = side * (58 + t * 85), by = 15 - t * 35, bz = -10 + t * 20;
+        let isRightSpasm = (st === 1 && side === 1 && t > 0.2 && t < 0.7);
+        pts.push({ x: bx, y: by, z: bz, r: isRightSpasm ? 6.5 : 11.5, c: isRightSpasm ? "#f59e0b" : "#ef4444" });
+        if (Math.abs(t - pulse) < 0.08 && !(st === 2 && side === 1 && t > 0.45))
+          pts.push({ x: bx, y: by, z: bz, r: 13.5, c: "#fef08a" });
+      }
+      for (let t = 0; t <= 1; t += 0.1)
+        pts.push({ x: side * (22 + t * 15), y: 15 - t * 75, z: 50 + t * 35, r: 10, c: "#f87171" });
+    });
+    if (st === 2) {
+      for (let u = 0; u < 3.14; u += 0.35)
+        for (let v = 0; v < 6.28; v += 0.35)
+          pts.push({ x: 88 + Math.sin(u) * Math.cos(v) * 24, y: -5 + Math.cos(u) * 24, z: 5 + Math.sin(u) * Math.sin(v) * 24, r: 11, c: "#b91c1c" });
+      labels.push({ x: 95, y: -15, z: 5, ox: 55, oy: -40, t: lang === "ru" ? "Аневризма (Риск разрыва)" : "Aneurysm Dome" });
+    } else if (st === 1) {
+      labels.push({ x: 88, y: 0, z: 0, ox: 55, oy: -35, t: lang === "ru" ? "Зона ангиоспазма" : "Angiospasm Zone" });
+    }
+    labels.push(
+      { x: 0, y: 115, z: -30, ox: 55, oy: 20, t: lang === "ru" ? "Базилярная артерия" : "Basilar Artery" },
+      { x: -58, y: 15, z: -10, ox: -185, oy: 15, t: lang === "ru" ? "Виллизиев круг" : "Circle of Willis" },
+      { x: -120, y: -15, z: 5, ox: -180, oy: -40, t: lang === "ru" ? "Средняя мозговая артерия" : "Middle Cerebral Artery" }
+    );
   }
   return { pts, labels };
 }
-canvas.addEventListener("touchstart", e => {
-  if (e.touches.length === 1) {
-    isDragging = true;
-    lastX = e.touches[0].clientX;
-    lastY = e.touches[0].clientY;
-  }
-}, { passive: true });
-window.addEventListener("touchend", () => { isDragging = false; });
-canvas.addEventListener("touchmove", e => {
-  if (!isDragging || e.touches.length !== 1) return;
-  rotY += (e.touches[0].clientX - lastX) * 0.008;
-  rotX += (e.touches[0].clientY - lastY) * 0.008;
-  lastX = e.touches[0].clientX;
-  lastY = e.touches[0].clientY;
-}, { passive: true });
