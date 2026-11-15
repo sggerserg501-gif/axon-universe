@@ -1,10 +1,11 @@
 let currentLang = "ru";
 let currentMod = 0;
 let currentState = 0;
+let isPaused = false;
 
 function renderLoop() {
   ctx.clearRect(0, 0, 1280, 900);
-  if (!isDragging) rotY += 0.004;
+  if (!isDragging && !isPaused) rotY += 0.004;
 
   const scene = buildScene(currentMod, currentState, currentLang);
   const projected = scene.pts.map(o => {
@@ -62,6 +63,21 @@ function toggleLang() {
   updateUI();
 }
 
+function togglePause() {
+  isPaused = !isPaused;
+  updatePauseBtn();
+}
+
+function updatePauseBtn() {
+  const btn = document.getElementById("pauseBtn");
+  if (!btn) return;
+  if (currentLang === "ru") {
+    btn.innerText = isPaused ? "Вращать ▶" : "Пауза ⏸";
+  } else {
+    btn.innerText = isPaused ? "Rotate ▶" : "Pause ⏸";
+  }
+}
+
 function toggleEditor() {
   const box = document.getElementById("editorBox");
   box.style.display = box.style.display === "block" ? "none" : "block";
@@ -97,6 +113,7 @@ function updateUI() {
   document.getElementById("fsBtn").innerText = langData.ui.fsBtn;
   document.getElementById("hudHint").innerText = langData.ui.hint;
   document.getElementById("discTxt").innerText = langData.ui.disc;
+  updatePauseBtn();
 
   for (let i = 0; i < 6; i++) {
     document.getElementById("tab" + i).innerText = langData.ui.tabs[i];
