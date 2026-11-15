@@ -6,7 +6,7 @@
 
 ## ✨ Основные возможности
 
-- **7 интерактивных 3D-модулей:**
+- **7 интерактивных 3D-моделей:**
   1. **Позвоночник** (Анатомическая норма, протрузия диска, грыжа с компрессией корешка)
   2. **Головной мозг** (Норма структур мозга, сосудистый спазм, очаговое давление / масс-эффект)
   3. **Нейрон и Аксон** (Норма проведения импульса, демиелинизация, блокада аксона и синапса)
@@ -20,9 +20,9 @@
 
 ## 🚀 Быстрый запуск
 
-1. Клонируйте репозиторий:
+1. Скачайте или клонируйте репозиторий:
    ```bash
-   git clone https://github.com
+   git clone https://github.com/sggerserg501-gif/axon-universe.git
    ```
 2. Откройте файл `index.html` в любом современном браузере.
 
@@ -35,13 +35,20 @@
 4. Нажмите **«Отправить правку в GitHub ↗»**, чтобы создать готовую заявку на рассмотрение.
 
 > **Дисклеймер:** Проект носит исключительно образовательный и демонстрационный характер и не заменяет очную консультацию специалиста, диагностику или назначение лечения.
-
 ---
 
-# 🇬🇧 English Summary
+# 🇬🇧 OpenNeuroAtlas 3D — Interactive Open-Source Medical Atlas
 
 **OpenNeuroAtlas 3D** is an open-source interactive 3D medical atlas built with pure HTML5 Canvas and Vanilla JavaScript (zero external dependencies). Designed for physicians, medical students, and patients to visualize anatomy, pathology stages, and clinical decision-making across **7 interactive modules** in **5 languages (RU, EN, ES, DE, ZH)**.
 
+## ✨ Key Features
+
+- **7 Interactive 3D Anatomical Modules:** Spine, Brain, Neuron & Axon, Brain Vessels (Circle of Willis), Cervical Spine (C4–C6), Heart & Coronary Vessels, and Leg Veins & Varicose.
+- **Multilingual Support (5 Languages):** Full UI, clinical cards, and 3D callout translations in **Russian (RU)**, **English (EN)**, **Spanish (ES)**, **German (DE)**, and **Chinese (ZH)**.
+- **Doctor Mode & Auto-Validation:** Built-in clinical editor allowing specialists to propose updates, validate medical style, export JSON, and submit review requests directly to GitHub Issues.
+- **Zero Dependencies:** Runs smoothly on desktop and mobile browsers without WebGL overhead or third-party libraries.
+
 ## 📄 Лицензия / License
 
-Распространяется по лицензии **MIT License**. Свободно для использования, модификации и распространения с указанием авторства.
+Распространяется по лицензии **MIT License**. Свободно для использования, модификации и распространения с указанием авторства.  
+Distributed under the **MIT License**. Free to use, modify, and distribute with attribution.
