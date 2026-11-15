@@ -127,8 +127,8 @@ function validateMedicalText(desc, tactics, author) {
   if (/(гарантия 100%|чудо|за 1 день|magic cure|100% guarantee)/i.test(full)) {
     return { status: "err", msg: isRu ? "❌ Ошибка стиля: обнаружены ненаучные формулировки. Используйте доказательную терминологию." : "❌ Style error: Non-scientific claims detected. Use evidence-based language." };
   }
-  if (currentState === 2 && !/(мрт|кт|энмг|экг|ангио|узи|врач|хирург|невролог|кардиолог|mri|ct|emg|ecg|angio|surgeon|specialist)/i.test(full)) {
-    return { status: "warn", msg: isRu ? "⚠ Применено с замечанием: для тяжелой стадии рекомендуется указать диагностику (МРТ, КТ, ЭКГ) или осмотр специалиста." : "⚠ Applied with note: For severe stages, mention diagnostics (MRI, CT, ECG) or specialist review." };
+  if (currentState === 2 && !/(мрт|кт|энмг|экг|ангио|узи|уздс|врач|хирург|невролог|кардиолог|флеболог|mri|ct|emg|ecg|angio|dus|surgeon|specialist)/i.test(full)) {
+    return { status: "warn", msg: isRu ? "⚠ Применено с замечанием: для тяжелой стадии рекомендуется указать диагностику (МРТ, КТ, УЗДС, ЭКГ) или осмотр специалиста." : "⚠ Applied with note: For severe stages, mention diagnostics (MRI, CT, DUS, ECG) or specialist review." };
   }
   if (!author || author.includes("Базовая редакция") || author.includes("Base Edition")) {
     return { status: "warn", msg: isRu ? "⚠ Применено: рекомендуем вписать ваши ФИО, степень и клинику в верхнее поле для подтверждения авторства." : "⚠ Applied: Please enter your name, degree, and clinic in the top field to verify authorship." };
@@ -179,7 +179,7 @@ function updateUI() {
   document.getElementById("saveBtn").innerText = currentLang === "ru" ? "Проверить и применить" : "Validate & Apply";
   updatePauseBtn();
 
-  for (let i = 0; i < 6; i++) {
+  for (let i = 0; i < 7; i++) {
     document.getElementById("tab" + i).innerText = langData.ui.tabs[i];
   }
   for (let i = 0; i < 3; i++) {

@@ -193,7 +193,7 @@ function buildScene(mod, st, lang) {
           pts.push({ x: side * 66, y: y, z: -18, r: 13, c: "#fef08a" });
       }
     });
-       if (st === 1) {
+        if (st === 1) {
       labels.push({ x: 66, y: 0, z: -18, ox: 55, oy: -25, t: lang === "ru" ? "Спазм позвоночной артерии" : "Vertebral Artery Spasm" });
     } else if (st === 2) {
       for (let dx = -10; dx <= 10; dx += 8)
@@ -206,7 +206,7 @@ function buildScene(mod, st, lang) {
       { x: -66, y: 40, z: -18, ox: -210, oy: 10, t: lang === "ru" ? "Позвоночная артерия" : "Vertebral Artery" },
       { x: -56, y: -95, z: 0, ox: -195, oy: -25, t: lang === "ru" ? "Позвонок C4" : "Vertebra C4" }
     );
-  } else {
+  } else if (mod === 5) {
     let beat = 1 + Math.sin(Date.now() * 0.007) * 0.055;
     for (let u = 0; u < 3.14; u += 0.2) {
       for (let v = 0; v < 6.28; v += 0.2) {
@@ -234,6 +234,37 @@ function buildScene(mod, st, lang) {
       { x: -10, y: -118, z: -5, ox: 55, oy: -25, t: lang === "ru" ? "Дуга аорты" : "Aortic Arch" },
       { x: -38, y: -90, z: 10, ox: -195, oy: -20, t: lang === "ru" ? "Верхняя полая вена" : "Superior Vena Cava" },
       { x: 25, y: 15, z: 42, ox: 65, oy: 10, t: st === 2 ? (lang === "ru" ? "Закупорка / Ишемия" : "Occlusion / Ischemia") : (st === 1 ? (lang === "ru" ? "Спазм коронара" : "Coronary Spasm") : (lang === "ru" ? "Коронарная артерия" : "Coronary Artery")) }
+    );
+  } else {
+    let flow = (Date.now() * 0.0025) % 1;
+    for (let y = -140; y <= 140; y += 11) {
+      let rad = st === 0 ? 34 : (st === 1 ? 46 : 52 + Math.sin(y * 0.065) * 18);
+      let bend = st === 2 ? Math.sin(y * 0.05) * 24 : 0;
+      let vColor = st === 0 ? "rgba(56, 189, 248, 0.32)" : (st === 1 ? "rgba(245, 158, 11, 0.35)" : "rgba(239, 68, 68, 0.38)");
+      for (let a = 0; a < 6.28; a += 0.35) {
+        pts.push({ x: bend + Math.cos(a) * rad, y: y, z: Math.sin(a) * rad, r: st === 2 ? 13 : 10, c: vColor });
+      }
+    }
+    [-55, 55].forEach(vy => {
+      let gap = st === 0 ? 4 : (st === 1 ? 18 : 30);
+      for (let t = 0; t <= 1; t += 0.14) {
+        pts.push({ x: -32 + t * (28 - gap * 0.4), y: vy - t * 18, z: 0, r: 9, c: "#facc15" });
+        pts.push({ x: 32 - t * (28 - gap * 0.4), y: vy - t * 18, z: 0, r: 9, c: "#facc15" });
+      }
+    });
+    for (let i = 0; i < 6; i++) {
+      let p = (flow + i / 6) % 1;
+      let fy = st === 2 ? (110 - Math.sin(p * 6.28) * 20) : (130 - p * 260);
+      pts.push({ x: 0, y: fy, z: 0, r: 12, c: "#60a5fa" });
+      if (st > 0 && i % 2 === 0) {
+        let ry = -55 + p * 95;
+        pts.push({ x: 14, y: ry, z: 8, r: 10, c: "#f87171" });
+      }
+    }
+    labels.push(
+      { x: 34, y: -105, z: 0, ox: 55, oy: -20, t: lang === "ru" ? "Стенка вены голени" : "Leg Vein Wall" },
+      { x: -16, y: -65, z: 0, ox: -215, oy: -15, t: st === 0 ? (lang === "ru" ? "Венозный клапан (Норма)" : "Venous Valve (Normal)") : (lang === "ru" ? "Недостаточность клапана" : "Valve Insufficiency") },
+      { x: 0, y: 85, z: 0, ox: 55, oy: 25, t: st === 2 ? (lang === "ru" ? "Варикозные узлы / Застой" : "Varicose Nodes / Stasis") : (lang === "ru" ? "Венозный отток вверх" : "Upward Venous Flow") }
     );
   }
   return { pts, labels };

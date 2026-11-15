@@ -1,10 +1,10 @@
 const DB = {
   ru: {
     ui: {
-      sub: "Международная образовательная платформа нейроанатомии, кардиологии и клинической тактики.",
+      sub: "Международная образовательная платформа нейроанатомии, кардиологии, флебологии и клинической тактики.",
       modLabel: "1. АНАТОМИЧЕСКИЙ РАЗДЕЛ",
       stateLabel: "2. КЛИНИЧЕСКАЯ СТАДИЯ",
-      tabs: ["Позвоночник", "Головной мозг", "Нейрон и Аксон", "Сосуды мозга", "Шейный отдел", "Сердце и сосуды"],
+      tabs: ["Позвоночник", "Головной мозг", "Нейрон и Аксон", "Сосуды мозга", "Шейный отдел", "Сердце и сосуды", "Вены ног и варикоз"],
       tacticsLabel: "Клиническая тактика:",
       authorLabel: "Редактор / Консультант: ",
       editBtn: "Режим врача",
@@ -60,15 +60,22 @@ const DB = {
           { pill: "Консервативное лечение", color: "#f59e0b", title: "Коронарный спазм / Стабильная стенокардия", desc: "Умеренное сужение просвета левой коронарной артерии (оранжевый участок). При нагрузке возникает временный дефицит кислорода.", tactics: "Успешно контролируется без операции: нитраты, бета-блокаторы, статины и коррекция образа жизни.", author: "Базовая редакция OpenNeuroAtlas" },
           { pill: "Срочная кардиохирургия", color: "#ef4444", title: "Критическая окклюзия коронарной артерии", desc: "Полная закупорка венечной артерии (красный блок) с формированием очага острой ишемии миокарда.", tactics: "Необходима экстренная коронарография и рентгенэндоваскулярное стентирование или шунтирование.", author: "Базовая редакция OpenNeuroAtlas" }
         ]
+      },
+      {
+        buttons: ["1. Норма вен и клапанов", "2. Начальный варикоз / Рефлюкс (Терапия)", "3. Варикозные узлы / Тромбоз (Флеболог)"],
+        states: [
+          { pill: "Норма", color: "#38bdf8", title: "Здоровый венозный отток и клапаны голени", desc: "Стенки глубоких и подкожных вен (синие) эластичны, створки венозных клапанов плотно смыкаются и направляют кровь строго вверх к сердцу.", tactics: "Операция не требуется. Полезна ходьба, плавание и разминка мышц голени при сидячей работе.", author: "Базовая редакция OpenNeuroAtlas" },
+          { pill: "Консервативное лечение", color: "#f59e0b", title: "Недостаточность клапанов и рефлюкс", desc: "Умеренное расширение просвета вены (оранжевая зона), створки клапана смыкаются не до конца, возникает обратный ток крови и вечерние отеки.", tactics: "Лечится без операции: компрессионный трикотаж, флеботоники, контрастный душ и лечебная ходьба.", author: "Базовая редакция OpenNeuroAtlas" },
+          { pill: "Консультация флеболога", color: "#ef4444", title: "Варикозная трансформация и риск тромбоза", desc: "Выраженное узловое расширение и извитость вены (красные узлы) с застоем крови и высоким риском тромбофлебита.", tactics: "Необходимо УЗДС вен нижних конечностей и осмотр сосудистого хирурга (решается вопрос о лазерной коагуляции ЭВЛК).", author: "Базовая редакция OpenNeuroAtlas" }
+        ]
       }
     ]
   },
   en: {
     ui: {
-      sub: "International open-source platform for neuroanatomy, cardiology, and clinical decision-making.",
+      sub: "International open-source platform for neuroanatomy, cardiology, phlebology, and clinical decision-making.",
       modLabel: "1. ANATOMICAL MODULE",
-      stateLabel: "2. CLINICAL STAGE",
-      tabs: ["Spine", "Brain", "Neuron & Axon", "Brain Vessels", "Cervical Spine", "Heart & Vessels"],
+      stateLabel: "2. CLINICAL STAGE",       tabs: ["Spine", "Brain", "Neuron & Axon", "Brain Vessels", "Cervical Spine", "Heart & Vessels", "Leg Veins & Varicose"],
       tacticsLabel: "Clinical Strategy:",
       authorLabel: "Editor / Consultant: ",
       editBtn: "Doctor Mode",
@@ -124,7 +131,16 @@ const DB = {
           { pill: "Conservative Care", color: "#f59e0b", title: "Coronary Spasm / Stable Angina", desc: "Moderate narrowing of the left coronary artery (orange) limits oxygen supply during exertion.", tactics: "Managed without surgery using nitrates, beta-blockers, and statins.", author: "Base Edition OpenNeuroAtlas" },
           { pill: "Urgent Cardiology", color: "#ef4444", title: "Critical Coronary Artery Occlusion", desc: "Complete blockage of the coronary vessel (red) causing acute myocardial ischemia.", tactics: "Requires emergency coronary angiography and stenting or bypass surgery.", author: "Base Edition OpenNeuroAtlas" }
         ]
+      },
+      {
+        buttons: ["1. Healthy Veins & Valves", "2. Early Varicose / Reflux (Therapy)", "3. Varicose Nodes / Thrombosis (Surgery)"],
+        states: [
+          { pill: "Normal", color: "#38bdf8", title: "Healthy Venous Return & Leg Valves", desc: "Deep and superficial vein walls (blue) are elastic, and venous valve cusps close tightly to guide blood upward to the heart.", tactics: "No surgery required. Regular walking and calf muscle activity support healthy circulation.", author: "Base Edition OpenNeuroAtlas" },
+          { pill: "Conservative Care", color: "#f59e0b", title: "Valve Insufficiency & Venous Reflux", desc: "Mild vein dilation (orange) prevents full valve closure, causing backward blood flow and evening leg heaviness.", tactics: "Managed without surgery via compression stockings, venotonics, and walking.", author: "Base Edition OpenNeuroAtlas" },
+          { pill: "Vascular Review", color: "#ef4444", title: "Varicose Tortuosity & Thrombosis Risk", desc: "Severe nodular vein dilation (red nodes) leads to blood stasis and thrombophlebitis risk.", tactics: "Requires duplex ultrasound (DUS) and vascular surgeon evaluation (EVLT laser ablation).", author: "Base Edition OpenNeuroAtlas" }
+        ]
       }
     ]
   }
 };
+
