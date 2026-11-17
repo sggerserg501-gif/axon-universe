@@ -322,7 +322,7 @@ function buildScene(mod, st, lang) {
       { x: 25, y: 15, z: 45, ox: 65, oy: 10, t: st === 2 ? L.isch : (st === 1 ? L.cspasm : L.cor) }
     );
 
-    } else {
+  } else if (mod === 6) {
     let flow = (Date.now() * 0.0025) % 1;
     let ySteps = 16, aSteps = 18;
     let vColor = st === 0 ? "rgba(56, 189, 248, 0.22)" : (st === 1 ? "rgba(245, 158, 11, 0.25)" : "rgba(239, 68, 68, 0.28)");
@@ -368,7 +368,52 @@ function buildScene(mod, st, lang) {
       { x: -16, y: -65, z: 0, ox: -215, oy: -15, t: st === 0 ? L.vnorm : L.vinsuff },
       { x: 0, y: 85, z: 0, ox: 55, oy: 25, t: st === 2 ? L.vnodes : L.vflow }
     );
+  } else if (mod === 7) {
+    const l7 = {
+      ru: ["Бедренная кость", "Мениск и хрящ", "Крестообразные связки", "Большеберцовая кость"],
+      en: ["Femur Bone", "Meniscus & Cartilage", "Cruciate Ligaments", "Tibia Bone"],
+      es: ["Fémur", "Menisco y Cartílago", "Ligamentos Cruzados", "Tibia"],
+      de: ["Oberschenkelknochen", "Meniskus & Knorpel", "Kreuzbänder", "Schienbein"],
+      zh: ["股骨", "半月板与软骨", "交叉韧带", "胫骨"]
+    }[lang] || ["Femur Bone", "Meniscus & Cartilage", "Cruciate Ligaments", "Tibia Bone"];
+
+    const stateCol = st === 0 ? "#38bdf8" : (st === 1 ? "#f59e0b" : "#ef4444");
+
+    addCylinder(-115, 24, 24, 90, "#e2e8f0", "rgba(148,163,184,0.25)");
+    addCylinder(-58, 44, 36, 28, "#e2e8f0", "rgba(148,163,184,0.25)");
+    addCylinder(58, 42, 34, 26, "#cbd5e1", "rgba(148,163,184,0.25)");
+    addCylinder(118, 22, 22, 95, "#cbd5e1", "rgba(148,163,184,0.25)");
+
+    for (let a = 0; a < 6.28; a += 0.5) {
+      pts.push({ x: Math.cos(a) * 14, y: -15 + Math.sin(a) * 18, z: 48, r: 9, c: "#f1f5f9" });
+    }
+
+    for (let side of [-1, 1]) {
+      for (let a = -1.2; a <= 1.2; a += 0.25) {
+        let mx = side * 24 + Math.cos(a) * 14 * side;
+        let mz = Math.sin(a) * 24;
+        let isDamaged = (st > 0 && side === 1 && Math.abs(a) < 0.6);
+        let mc = isDamaged ? stateCol : "#38bdf8";
+        pts.push({ x: mx, y: 20, z: mz, r: isDamaged ? 11 : 9, c: mc });
+      }
+    }
+
+    if (st < 2) {
+      tubes.push({ x1: -10, y1: -38, z1: -8, x2: 12, y2: 38, z2: 12, r: 5.5, c: "#facc15" });
+      tubes.push({ x1: 10, y1: -38, z1: 8, x2: -12, y2: 38, z2: -12, r: 5.5, c: "#fde047" });
+    } else {
+      tubes.push({ x1: -10, y1: -38, z1: -8, x2: -2, y2: -6, z2: 2, r: 5.5, c: "#ef4444" });
+      tubes.push({ x1: 4, y1: 12, z1: 6, x2: 12, y2: 38, z2: 12, r: 5.5, c: "#ef4444" });
+      tubes.push({ x1: 10, y1: -38, z1: 8, x2: -12, y2: 38, z2: -12, r: 5.5, c: "#fde047" });
+    }
+
+    labels.push(
+      { x: 0, y: -115, z: 24, ox: 75, oy: -25, t: l7[0] },
+      { x: 34, y: 20, z: 10, ox: 75, oy: -5, t: l7[1] },
+      { x: 0, y: 0, z: 0, ox: -135, oy: 15, t: l7[2] },
+      { x: 0, y: 115, z: 22, ox: 75, oy: 25, t: l7[3] }
+    );
   }
+
   return { pts, tubes, polys, labels };
 }
-

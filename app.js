@@ -314,7 +314,7 @@ function updateUI() {
   document.getElementById("ghBtn").innerText = ghBtns[currentLang] || ghBtns.en;
   updatePauseBtn();
 
-  for (let i = 0; i < 7; i++) {
+  for (let i = 0; i < 8; i++) {
     document.getElementById("tab" + i).innerText = langData.ui.tabs[i];
   }
   for (let i = 0; i < 3; i++) {

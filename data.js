@@ -4,7 +4,7 @@ const DB = {
       sub: "Международная образовательная платформа нейроанатомии, кардиологии, флебологии и клинической тактики.",
       modLabel: "1. АНАТОМИЧЕСКИЙ РАЗДЕЛ",
       stateLabel: "2. КЛИНИЧЕСКАЯ СТАДИЯ",
-      tabs: ["Позвоночник", "Головной мозг", "Нейрон и Аксон", "Сосуды мозга", "Шейный отдел", "Сердце и сосуды", "Вены ног и варикоз"],
+      tabs: ["Позвоночник", "Головной мозг", "Нейрон и Аксон", "Сосуды мозга", "Шейный отдел", "Сердце и сосуды", "Вены ног и варикоз", "Коленный сустав"],
       tacticsLabel: "Клиническая тактика:",
       authorLabel: "Редактор / Консультант: ",
       editBtn: "Режим врача",
@@ -68,6 +68,14 @@ const DB = {
           { pill: "Консервативное лечение", color: "#f59e0b", title: "Недостаточность клапанов и рефлюкс", desc: "Умеренное расширение просвета вены (оранжевая зона), створки клапана смыкаются не до конца, возникает обратный ток крови и вечерние отеки.", tactics: "Лечится без операции: компрессионный трикотаж, флеботоники, контрастный душ и лечебная ходьба.", author: "Базовая редакция OpenNeuroAtlas" },
           { pill: "Консультация флеболога", color: "#ef4444", title: "Варикозная трансформация и риск тромбоза", desc: "Выраженное узловое расширение и извитость вены (красные узлы) с застоем крови и высоким риском тромбофлебита.", tactics: "Необходимо УЗДС вен нижних конечностей и осмотр сосудистого хирурга (решается вопрос о лазерной коагуляции ЭВЛК).", author: "Базовая редакция OpenNeuroAtlas" }
         ]
+      },
+      {
+        buttons: ["1. Норма сустава и менисков", "2. Надрыв мениска / Артроз (Терапия)", "3. Разрыв ПКС / Гонартроз (Артроскопия)"],
+        states: [
+          { pill: "Норма", color: "#38bdf8", title: "Здоровый коленный сустав, мениски и связки", desc: "Суставной хрящ (синий) гладкий, оба мениска амортизируют нагрузку, а крестообразные связки (жёлтые) стабильно удерживают сустав.", tactics: "Операция не требуется. Рекомендуется укрепление мышц бедра и умеренная активность.", author: "Базовая редакция OpenNeuroAtlas" },
+          { pill: "Консервативное лечение", color: "#f59e0b", title: "Дегенеративный надрыв мениска / Артроз I–II ст.", desc: "Локальное истончение хряща и повреждение мениска (оранжевая зона) без блокирования сустава.", tactics: "Лечится без операции: ЛФК для стабилизации колена, физиотерапия, хондропротекторы и контроль веса.", author: "Базовая редакция OpenNeuroAtlas" },
+          { pill: "Консультация ортопеда", color: "#ef4444", title: "Полный разрыв ПКС / Выраженный гонартроз", desc: "Нарушение целостности передней крестообразной связки или грубый дефект хряща (красная зона) с нестабильностью.", tactics: "Требуется МРТ коленного сустава и осмотр травматолога-ортопеда (решается вопрос об артроскопии).", author: "Базовая редакция OpenNeuroAtlas" }
+        ]
       }
     ]
   },
@@ -75,7 +83,8 @@ const DB = {
     ui: {
       sub: "International open-source platform for neuroanatomy, cardiology, phlebology, and clinical decision-making.",
       modLabel: "1. ANATOMICAL MODULE",
-      stateLabel: "2. CLINICAL STAGE",       tabs: ["Spine", "Brain", "Neuron & Axon", "Brain Vessels", "Cervical Spine", "Heart & Vessels", "Leg Veins & Varicose"],
+      stateLabel: "2. CLINICAL STAGE",
+      tabs: ["Spine", "Brain", "Neuron & Axon", "Brain Vessels", "Cervical Spine", "Heart & Vessels", "Leg Veins & Varicose", "Knee Joint"],
       tacticsLabel: "Clinical Strategy:",
       authorLabel: "Editor / Consultant: ",
       editBtn: "Doctor Mode",
@@ -139,6 +148,14 @@ const DB = {
           { pill: "Conservative Care", color: "#f59e0b", title: "Valve Insufficiency & Venous Reflux", desc: "Mild vein dilation (orange) prevents full valve closure, causing backward blood flow and evening leg heaviness.", tactics: "Managed without surgery via compression stockings, venotonics, and walking.", author: "Base Edition OpenNeuroAtlas" },
           { pill: "Vascular Review", color: "#ef4444", title: "Varicose Tortuosity & Thrombosis Risk", desc: "Severe nodular vein dilation (red nodes) leads to blood stasis and thrombophlebitis risk.", tactics: "Requires duplex ultrasound (DUS) and vascular surgeon evaluation (EVLT laser ablation).", author: "Base Edition OpenNeuroAtlas" }
         ]
+      },
+      {
+        buttons: ["1. Healthy Knee & Menisci", "2. Meniscus Tear / Osteoarthritis (Therapy)", "3. ACL Rupture / Severe Arthrosis (Surgery)"],
+        states: [
+          { pill: "Normal", color: "#38bdf8", title: "Healthy Knee Joint, Menisci & Ligaments", desc: "Articular cartilage (blue) is smooth, both menisci cushion load, and cruciate ligaments (yellow) stabilize the joint.", tactics: "No surgery required. Quadriceps strengthening and balanced activity are recommended.", author: "Base Edition OpenNeuroAtlas" },
+          { pill: "Conservative Care", color: "#f59e0b", title: "Degenerative Meniscus Tear / Grade I–II Arthrosis", desc: "Localized cartilage thinning and meniscus wear (orange) without mechanical joint locking.", tactics: "Managed non-surgically via targeted physical therapy, physiotherapy, and load management.", author: "Base Edition OpenNeuroAtlas" },
+          { pill: "Orthopedic Review", color: "#ef4444", title: "Complete ACL Tear / Advanced Gonarthrosis", desc: "Cruciate ligament rupture or severe cartilage defect (red) causing joint instability.", tactics: "Requires knee MRI and orthopedic surgeon evaluation (arthroscopic reconstruction).", author: "Base Edition OpenNeuroAtlas" }
+        ]
       }
     ]
   },
@@ -147,7 +164,7 @@ const DB = {
       sub: "Plataforma internacional de código abierto para neuroanatomía, cardiología, flebología y estrategia clínica.",
       modLabel: "1. MÓDULO ANATÓMICO",
       stateLabel: "2. ETAPA CLÍNICA",
-      tabs: ["Columna", "Cerebro", "Neurona y Axón", "Vasos Cerebrales", "Columna Cervical", "Corazón y Vasos", "Venas y Varices"],
+      tabs: ["Columna", "Cerebro", "Neurona y Axón", "Vasos Cerebrales", "Columna Cervical", "Corazón y Vasos", "Venas y Varices", "Articulación de Rodilla"],
       tacticsLabel: "Estrategia Clínica:",
       authorLabel: "Editor / Consultor: ",
       editBtn: "Modo Médico",
@@ -211,6 +228,14 @@ const DB = {
           { pill: "Tratamiento Conservador", color: "#f59e0b", title: "Insuficiencia Valvular y Reflujo", desc: "Dilatación venosa leve (naranja) con cierre incompleto de válvulas y pesadez vespertina.", tactics: "Manejo sin cirugía con medias de compresión y flebotónicos.", author: "Edición Base OpenNeuroAtlas" },
           { pill: "Revisión Vascular", color: "#ef4444", title: "Tortuosidad Varicosa y Riesgo de Trombosis", desc: "Dilatación nodular severa (nódulos rojos) con estasis sanguínea y riesgo de tromboflebitis.", tactics: "Requiere ecografía Doppler (DUS) y valoración por cirujano vascular.", author: "Edición Base OpenNeuroAtlas" }
         ]
+      },
+      {
+        buttons: ["1. Rodilla y Meniscos Sanos", "2. Desgarro Meniscal / Artrosis (Terapia)", "3. Rotura LCA / Gonartrosis (Cirugía)"],
+        states: [
+          { pill: "Normal", color: "#38bdf8", title: "Articulación de Rodilla y Meniscos Sanos", desc: "El cartílago articular (azul) es liso y los ligamentos cruzados (amarillo) mantienen la estabilidad.", tactics: "No requiere cirugía. Se recomienda fortalecimiento muscular.", author: "Edición Base OpenNeuroAtlas" },
+          { pill: "Tratamiento Conservador", color: "#f59e0b", title: "Lesión Meniscal Degenerativa / Artrosis I–II", desc: "Adelgazamiento local del cartílago (naranja) sin bloqueo articular.", tactics: "Tratamiento sin cirugía mediante fisioterapia y control de carga.", author: "Edición Base OpenNeuroAtlas" },
+          { pill: "Revisión Ortopédica", color: "#ef4444", title: "Rotura Completa de LCA / Gonartrosis Severa", desc: "Ruptura del ligamento cruzado o defecto grave del cartílago (rojo).", tactics: "Requiere RM de rodilla y valoración por traumatólogo (artroscopia).", author: "Edición Base OpenNeuroAtlas" }
+        ]
       }
     ]
   },
@@ -219,7 +244,7 @@ const DB = {
       sub: "Internationale Open-Source-Plattform für Neuroanatomie, Kardiologie, Phlebologie und klinische Taktik.",
       modLabel: "1. ANATOMISCHES MODUL",
       stateLabel: "2. KLINISCHES STADIUM",
-      tabs: ["Wirbelsäule", "Gehirn", "Neuron & Axon", "Hirngefäße", "Halswirbelsäule", "Herz & Gefäße", "Beinvenen & Varizen"],
+      tabs: ["Wirbelsäule", "Gehirn", "Neuron & Axon", "Hirngefäße", "Halswirbelsäule", "Herz & Gefäße", "Beinvenen & Varizen", "Kniegelenk"],
       tacticsLabel: "Klinische Strategie:",
       authorLabel: "Redakteur / Berater: ",
       editBtn: "Arztmodus",
@@ -237,7 +262,8 @@ const DB = {
         ]
       },
       {
-        buttons: ["1. Normales Gehirn", "2. Gefäßspasmus (Therapie)", "3. Raumforderung (Neurochirurgie)"],         states: [
+        buttons: ["1. Normales Gehirn", "2. Gefäßspasmus (Therapie)", "3. Raumforderung (Neurochirurgie)"],
+        states: [
           { pill: "Normal", color: "#38bdf8", title: "Normale Hirnanatomie", desc: "Großhirn, Kleinhirn und Hirnstamm zeigen normales Volumen und gute Durchblutung.", tactics: "Kein Eingriff notwendig.", author: "Basisausgabe OpenNeuroAtlas" },
           { pill: "Konservative Therapie", color: "#f59e0b", title: "Lokaler Angiospasmus / Leichte Ischämie", desc: "Transparente Hemisphären zeigen eine reversible Minderdurchblutung (orange).", tactics: "Nicht-operative Behandlung mit gefäßaktiver Therapie.", author: "Basisausgabe OpenNeuroAtlas" },
           { pill: "Chirurgische Prüfung", color: "#ef4444", title: "Intrazerebraler Raumforderungsprozess", desc: "Lokaler Herd oder Hämatom (rot) mit Druck auf umliegendes Hirngewebe.", tactics: "Dringende MRT/CT-Bildgebung und neurochirurgische Abklärung.", author: "Basisausgabe OpenNeuroAtlas" }
@@ -282,6 +308,14 @@ const DB = {
           { pill: "Konservative Therapie", color: "#f59e0b", title: "Klappeninsuffizienz & Venöser Reflux", desc: "Leichte Venenerweiterung (orange) verhindert vollständigen Klappenschluss.", tactics: "Behandlung ohne Operation durch Kompressionsstrümpfe und Venentonika.", author: "Basisausgabe OpenNeuroAtlas" },
           { pill: "Gefäßchirurgische Prüfung", color: "#ef4444", title: "Variköse Knotenbildung & Thromboserisiko", desc: "Starke knotige Erweiterung (rote Knoten) mit Blutstau und Thrombophlebitis-Risiko.", tactics: "Duplexsonographie (DUS) und gefäßchirurgische Untersuchung (EVLT-Laser).", author: "Basisausgabe OpenNeuroAtlas" }
         ]
+      },
+      {
+        buttons: ["1. Gesundes Knie & Menisken", "2. Meniskusriss / Arthrose (Therapie)", "3. Kreuzbandriss / Gonarthrose (Chirurgie)"],
+        states: [
+          { pill: "Normal", color: "#38bdf8", title: "Gesundes Kniegelenk, Menisken & Bänder", desc: "Der Gelenkknorpel (blau) ist glatt und die Kreuzbänder (gelb) stabilisieren das Gelenk.", tactics: "Keine Operation erforderlich. Kräftigung der Oberschenkelmuskulatur empfohlen.", author: "Basisausgabe OpenNeuroAtlas" },
+          { pill: "Konservative Therapie", color: "#f59e0b", title: "Degenerativer Meniskusschaden / Arthrose I–II", desc: "Lokale Knorpelausdünnung (orange) ohne mechanische Gelenkblockade.", tactics: "Konservative Behandlung mit Physiotherapie und gezieltem Muskelaufbau.", author: "Basisausgabe OpenNeuroAtlas" },
+          { pill: "Orthopädische Prüfung", color: "#ef4444", title: "Kompletter Kreuzbandriss / Schwere Gonarthrose", desc: "Riss des vorderen Kreuzbandes oder schwerer Knorpeldefekt (rot).", tactics: "Knie-MRT und orthopädisch-chirurgische Untersuchung (Arthroskopie) erforderlich.", author: "Basisausgabe OpenNeuroAtlas" }
+        ]
       }
     ]
   },
@@ -290,7 +324,7 @@ const DB = {
       sub: "面向神经解剖学、心脏病学、静脉学与临床决策的国际开源3D医学平台。",
       modLabel: "1. 解剖学模块",
       stateLabel: "2. 临床分期",
-      tabs: ["脊柱", "大脑", "神经元与轴突", "脑血管", "颈椎", "心脏与血管", "下肢静脉曲张"],
+      tabs: ["脊柱", "大脑", "神经元与轴突", "脑血管", "颈椎", "心脏与血管", "下肢静脉曲张", "膝关节与半月板"],
       tacticsLabel: "临床策略：",
       authorLabel: "编辑 / 医学顾问：",
       editBtn: "医生模式",
@@ -341,7 +375,8 @@ const DB = {
       },
       {
         buttons: ["1. 心律与冠脉正常", "2. 冠脉痉挛 / 心绞痛（药物）", "3. 冠脉闭塞 / 心肌缺血（支架）"],
-        states: [           { pill: "正常", color: "#38bdf8", title: "健康心肌与冠状动脉血流", desc: "心脏规律搏动将血液泵入主动脉弓，冠状动脉均匀滋养心肌。", tactics: "无需手术，建议规律有氧运动并控制血脂。", author: "OpenNeuroAtlas 基础版" },
+        states: [
+          { pill: "正常", color: "#38bdf8", title: "健康心肌与冠状动脉血流", desc: "心脏规律搏动将血液泵入主动脉弓，冠状动脉均匀滋养心肌。", tactics: "无需手术，建议规律有氧运动并控制血脂。", author: "OpenNeuroAtlas 基础版" },
           { pill: "保守治疗", color: "#f59e0b", title: "冠状动脉痉挛 / 稳定性心绞痛", desc: "左冠状动脉中度狭窄（橙色区域），劳累时心肌供氧暂时不足。", tactics: "通过硝酸酯类、β受体阻滞剂及他汀类药物规范治疗。", author: "OpenNeuroAtlas 基础版" },
           { pill: "紧急心内", color: "#ef4444", title: "冠状动脉严重闭塞", desc: "冠状动脉完全阻塞（红色阻断区）并形成急性心肌缺血灶。", tactics: "需紧急行冠状动脉造影及支架植入或搭桥手术。", author: "OpenNeuroAtlas 基础版" }
         ]
@@ -353,10 +388,15 @@ const DB = {
           { pill: "保守治疗", color: "#f59e0b", title: "静脉瓣膜功能不全与血液反流", desc: "静脉轻度扩张（橙色）导致瓣膜闭合不全，出现血液反流及傍晚下肢酸胀。", tactics: "穿戴医用弹力袜、口服静脉活性药物及步行锻炼。", author: "OpenNeuroAtlas 基础版" },
           { pill: "血管外科", color: "#ef4444", title: "迂曲静脉曲张结节与血栓风险", desc: "静脉严重结节状扩张迂曲（红色结节），血流淤滞且易发血栓性静脉炎。", tactics: "需行下肢静脉彩超（DUS）并由血管外科评估激光闭合术（EVLT）。", author: "OpenNeuroAtlas 基础版" }
         ]
+      },
+      {
+        buttons: ["1. 膝关节与半月板正常", "2. 半月板损伤 / 骨关节炎（保守）", "3. 前交叉韧带断裂 / 重度关节炎（手术）"],
+        states: [
+          { pill: "正常", color: "#38bdf8", title: "健康膝关节、半月板与交叉韧带", desc: "关节软骨（蓝色）光滑，半月板缓冲负荷，交叉韧带（黄色）稳定关节。", tactics: "无需手术，建议加强股四头肌力量锻炼。", author: "OpenNeuroAtlas 基础版" },
+          { pill: "保守治疗", color: "#f59e0b", title: "半月板退变性撕裂 / I–II期骨关节炎", desc: "局部软骨变薄与半月板磨损（橙色区域），无关节交锁。", tactics: "通过康复理疗、肌力训练及体重控制非手术治疗。", author: "OpenNeuroAtlas 基础版" },
+          { pill: "骨科评估", color: "#ef4444", title: "前交叉韧带完全断裂 / 重度膝关节炎", desc: "交叉韧带断裂或严重软骨缺损（红色区域）导致关节不稳。", tactics: "需行膝关节 MRI 检查并由骨科医生评估关节镜手术。", author: "OpenNeuroAtlas 基础版" }
+        ]
       }
     ]
   }
 };
-
-
-
