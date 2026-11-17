@@ -1,7 +1,13 @@
 (function () {
-  if (window.innerWidth <= 768 && typeof zoom !== "undefined") {
-    zoom = 1.28;
+  function applyBigZoom() {
+    if (typeof zoom !== "undefined") {
+      zoom = window.innerWidth <= 768 ? 1.55 : 1.85;
+    }
   }
+
+  applyBigZoom();
+  window.addEventListener("load", applyBigZoom);
+  setTimeout(applyBigZoom, 300);
 
   const warmNotes = {
     ru: "💛 Помните: организм человека обладает огромным запасом прочности и способностью к восстановлению. Эта 3D-модель создана, чтобы спокойно и понятно разобраться в устройстве своего тела вместе с врачом.",
