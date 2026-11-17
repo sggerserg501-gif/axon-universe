@@ -1,13 +1,18 @@
 (function () {
   function applyBigZoom() {
-    if (typeof zoom !== "undefined") {
-      zoom = window.innerWidth <= 768 ? 1.55 : 1.85;
-    }
+    try {
+      if (typeof zoomStep === "function") {
+        const steps = window.innerWidth <= 768 ? 3 : 5;
+        for (let i = 0; i < steps; i++) {
+          zoomStep(0.15);
+        }
+      }
+    } catch (e) {}
   }
 
-  applyBigZoom();
-  window.addEventListener("load", applyBigZoom);
-  setTimeout(applyBigZoom, 300);
+  window.addEventListener("load", function () {
+    setTimeout(applyBigZoom, 200);
+  });
 
   const warmNotes = {
     ru: "💛 Помните: организм человека обладает огромным запасом прочности и способностью к восстановлению. Эта 3D-модель создана, чтобы спокойно и понятно разобраться в устройстве своего тела вместе с врачом.",
@@ -19,18 +24,22 @@
 
   const origUpdateUI = window.updateUI;
   window.updateUI = function () {
-    if (typeof origUpdateUI === "function") origUpdateUI();
-    const card = document.getElementById("clinicalCard");
-    if (!card) return;
-    let note = document.getElementById("warmCareNote");
-    if (!note) {
-      note = document.createElement("div");
-      note.id = "warmCareNote";
-      note.style.cssText = "margin-top:12px; padding:10px 12px; background:rgba(14,165,233,0.12); border-left:3px solid #38bdf8; border-radius:6px; font-size:13px; line-height:1.55; color:#e0f2fe;";
-      card.appendChild(note);
-    }
-    note.textContent = warmNotes[currentLang] || warmNotes.ru;
+    try {
+      if (typeof origUpdateUI === "function") origUpdateUI();
+      const card = document.getElementById("clinicalCard");
+      if (!card) return;
+      let note = document.getElementById("warmCareNote");
+      if (!note) {
+        note = document.createElement("div");
+        note.id = "warmCareNote";
+        note.style.cssText = "margin-top:12px; padding:10px 12px; background:rgba(14,165,233,0.12); border-left:3px solid #38bdf8; border-radius:6px; font-size:13px; line-height:1.55; color:#e0f2fe;";
+        card.appendChild(note);
+      }
+      note.textContent = warmNotes[typeof currentLang !== "undefined" ? currentLang : "ru"] || warmNotes.ru;
+    } catch (e) {}
   };
 
-  if (typeof window.updateUI === "function") window.updateUI();
+  try {
+    if (typeof window.updateUI === "function") window.updateUI();
+  } catch (e) {}
 })();
