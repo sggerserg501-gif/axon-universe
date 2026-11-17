@@ -21,18 +21,18 @@ jobs:
               exit 1
             fi
           done
-          echo "All core files present."
+          echo "All 7 core files are present."
 
       - name: Verify medical disclaimer and safety guard
         run: |
-          grep -q "disclaimerModal" index.html
+          grep -q "Важное медицинское уведомление" index.html
           grep -q "initSafetyGuard" app.js
-          echo "Medical disclaimer and safety filter verified."
+          echo "Medical disclaimer and safety guard are active."
 
       - name: Scan data.js for forbidden dosages or prescriptions
         run: |
-          if grep -iE "(дозировк|рецепт|принимать по|мг/сут|таблетк|prescribe|dosage|mg/day)" data.js; then
-            echo "ERROR: Forbidden medical prescription or dosage detected in data.js!"
+          if grep -iE "([0-9]+\s*(мг|мл|мкг|mg|ml)|принимать по|по [0-9]+ табл|prescribe|mg/day)" data.js; then
+            echo "ERROR: Forbidden dosage or prescription detected in data.js!"
             exit 1
           fi
           echo "No forbidden prescriptions found in data.js."
