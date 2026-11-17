@@ -1,0 +1,38 @@
+name: Medical Safety & Code Check
+
+on:
+  push:
+    branches: [ "main" ]
+  pull_request:
+    branches: [ "main" ]
+
+jobs:
+  verify-platform:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Check required core files
+        run: |
+          for file in index.html style.css app.js data.js engine.js LICENSE README.md; do
+            if [ ! -f "$file" ]; then
+              echo "ERROR: Missing core file $file"
+              exit 1
+            fi
+          done
+          echo "All core files present."
+
+      - name: Verify medical disclaimer and safety guard
+        run: |
+          grep -q "disclaimerModal" index.html
+          grep -q "initSafetyGuard" app.js
+          echo "Medical disclaimer and safety filter verified."
+
+      - name: Scan data.js for forbidden dosages or prescriptions
+        run: |
+          if grep -iE "(дозировк|рецепт|принимать по|мг/сут|таблетк|prescribe|dosage|mg/day)" data.js; then
+            echo "ERROR: Forbidden medical prescription or dosage detected in data.js!"
+            exit 1
+          fi
+          echo "No forbidden prescriptions found in data.js."
