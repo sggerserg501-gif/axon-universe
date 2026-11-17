@@ -108,84 +108,115 @@ function project3D(x, y, z) {
 }
 function buildScene(mod, st, lang) {
   const L = LABELS_3D[lang] || LABELS_3D.en;
-  let pts = [], labels = [];
+  let pts = [], labels = [], tubes = [], polys = [];
+
+  function addCylinder(cy, rX, rZ, h, col, strokeCol) {
+    let segs = 20, yTop = cy - h / 2, yBot = cy + h / 2;
+    let topPts = [], botPts = [];
+    for (let i = 0; i < segs; i++) {
+      let a1 = (i / segs) * 6.283, a2 = ((i + 1) / segs) * 6.283;
+      let x1 = Math.cos(a1) * rX, z1 = Math.sin(a1) * rZ;
+      let x2 = Math.cos(a2) * rX, z2 = Math.sin(a2) * rZ;
+      polys.push({ pts: [{ x: x1, y: yTop, z: z1 }, { x: x2, y: yTop, z: z2 }, { x: x2, y: yBot, z: z2 }, { x: x1, y: yBot, z: z1 }], c: col, stroke: strokeCol });
+      topPts.push({ x: x1, y: yTop, z: z1 });
+      botPts.push({ x: x1, y: yBot, z: z1 });
+    }
+    polys.push({ pts: topPts, c: col, stroke: strokeCol });
+    polys.push({ pts: botPts, c: col, stroke: strokeCol });
+  }
 
   if (mod === 0) {
     [-82, 82].forEach(y => {
-      for (let a = 0; a < 6.28; a += 0.25)
-        for (let h = -22; h <= 22; h += 11)
-          pts.push({ x: Math.cos(a) * 74, y: y + h, z: Math.sin(a) * 64, r: 14, c: "#cbd5e1" });
-      for (let z = -64; z >= -142; z -= 12)
-        pts.push({ x: 0, y: y, z: z, r: 15, c: "#94a3b8" });
+      addCylinder(y, 72, 62, 46, "#cbd5e1", "#94a3b8");
+      tubes.push({ x1: 0, y1: y, z1: -58, x2: 0, y2: y + 8, z2: -145, r: 13, c: "#94a3b8" });
+      tubes.push({ x1: -75, y1: y, z1: -45, x2: 75, y2: y, z2: -45, r: 10, c: "#94a3b8" });
     });
-    for (let a = 0; a < 6.28; a += 0.22)
-      for (let h = -13; h <= 13; h += 12)
-        pts.push({ x: Math.cos(a) * 72, y: h, z: Math.sin(a) * 62, r: 14, c: "#38bdf8" });
-    for (let y = -135; y <= 135; y += 11)
-      pts.push({ x: 0, y: y, z: -84, r: 18, c: "#facc15" });
-    for (let t = 0; t <= 1; t += 0.12) {
-      pts.push({ x: t * 92, y: t * 20, z: -84 + t * 20, r: 11, c: "#facc15" });
-      pts.push({ x: -t * 92, y: t * 20, z: -84 + t * 20, r: 11, c: "#facc15" });
-    }
+    addCylinder(0, 70, 60, 26, "#38bdf8", "#0284c7");
+    tubes.push({ x1: 0, y1: -138, z1: -84, x2: 0, y2: 138, z2: -84, r: 15, c: "#facc15" });
+    tubes.push({ x1: 0, y1: -5, z1: -84, x2: 95, y2: 22, z2: -62, r: 8, c: "#facc15" });
+    tubes.push({ x1: 0, y1: -5, z1: -84, x2: -95, y2: 22, z2: -62, r: 8, c: "#facc15" });
+
     labels.push(
       { x: 0, y: -130, z: -84, ox: 50, oy: -35, t: L.cord },
-      { x: 72, y: 0, z: 0, ox: 70, oy: 0, t: L.disc },
-      { x: -74, y: -82, z: 0, ox: -210, oy: -20, t: L.vert }
+      { x: 70, y: 0, z: 0, ox: 70, oy: 0, t: L.disc },
+      { x: -72, y: -82, z: 0, ox: -210, oy: -20, t: L.vert }
     );
     if (st > 0) {
-      for (let dx = -10; dx <= 10; dx += 9)
-        for (let dy = -8; dy <= 8; dy += 8)
-          pts.push({ x: 18 + dx, y: dy, z: st === 2 ? -74 : -63, r: st === 2 ? 22 : 15, c: st === 2 ? "#ef4444" : "#f59e0b" });
-      labels.push({ x: 18, y: 0, z: -74, ox: 75, oy: 45, t: st === 2 ? L.comp : L.prot });
+      let hz = st === 2 ? -76 : -63;
+      let hr = st === 2 ? 21 : 14;
+      let hc = st === 2 ? "#ef4444" : "#f59e0b";
+      pts.push({ x: 18, y: 0, z: hz, r: hr, c: hc });
+      labels.push({ x: 18, y: 0, z: hz, ox: 75, oy: 45, t: st === 2 ? L.comp : L.prot });
     }
-  } else if (mod === 1) {
-    let brainColor = st > 0 ? "rgba(244, 114, 182, 0.22)" : "#f472b6";
-    [-1, 1].forEach(k => {
-      for (let u = 0; u < 3.14; u += 0.22)
-        for (let v = 0; v < 3.14; v += 0.22)
-          pts.push({ x: k * (10 + Math.sin(u) * Math.sin(v) * 70), y: -Math.cos(u) * 75, z: Math.sin(u) * Math.cos(v) * 95, r: 15, c: brainColor });
+
+   } else if (mod === 1) {
+    let bCol = st > 0 ? "rgba(244, 114, 182, 0.25)" : "#f472b6";
+    let bStroke = st > 0 ? "rgba(244, 114, 182, 0.35)" : "#db2777";
+    [-1, 1].forEach(side => {
+      let uStep = 0.314, vStep = 0.314;
+      for (let u = 0; u < 3.14; u += uStep) {
+        for (let v = 0; v < 3.14; v += vStep) {
+          let p1 = { x: side * (6 + Math.sin(u) * Math.sin(v) * 72), y: -Math.cos(u) * 76, z: Math.sin(u) * Math.cos(v) * 96 };
+          let p2 = { x: side * (6 + Math.sin(u + uStep) * Math.sin(v) * 72), y: -Math.cos(u + uStep) * 76, z: Math.sin(u + uStep) * Math.cos(v) * 96 };
+          let p3 = { x: side * (6 + Math.sin(u + uStep) * Math.sin(v + vStep) * 72), y: -Math.cos(u + uStep) * 76, z: Math.sin(u + uStep) * Math.cos(v + vStep) * 96 };
+          let p4 = { x: side * (6 + Math.sin(u) * Math.sin(v + vStep) * 72), y: -Math.cos(u) * 76, z: Math.sin(u) * Math.cos(v + vStep) * 96 };
+          polys.push({ pts: [p1, p2, p3, p4], c: bCol, stroke: bStroke });
+        }
+      }
     });
-    for (let u = 0; u < 6.28; u += 0.34)
-      for (let v = 0; v < 3.14; v += 0.34)
-        pts.push({ x: Math.sin(v) * Math.cos(u) * 45, y: 55 + Math.cos(v) * 26, z: -65 + Math.sin(v) * Math.sin(u) * 32, r: 13, c: "#c084fc" });
-    for (let y = 42; y <= 120; y += 11)
-      pts.push({ x: 0, y: y, z: -20, r: 19, c: "#38bdf8" });
-    labels.push(
-      { x: 0, y: -75, z: 0, ox: 65, oy: -45, t: L.hemi },
-      { x: 0, y: 62, z: -92, ox: 75, oy: 35, t: L.cereb },
-      { x: 0, y: 110, z: -20, ox: -185, oy: 30, t: L.stem }
-    );
-    if (st > 0) {
-      for (let dx = -12; dx <= 12; dx += 8)
-        for (let dy = -12; dy <= 12; dy += 8)
-          for (let dz = -12; dz <= 12; dz += 8)
-            pts.push({ x: 32 + dx, y: -15 + dy, z: 18 + dz, r: st === 2 ? 24 : 17, c: st === 2 ? "#ef4444" : "#f59e0b" });
-      labels.push({ x: 32, y: -15, z: 18, ox: 80, oy: -10, t: st === 2 ? L.lesion : L.spasm });
-    }
-  } else if (mod === 2) {
-    for (let u = 0; u < 3.14; u += 0.28)
-      for (let v = 0; v < 6.28; v += 0.28)
-        pts.push({ x: -125 + Math.sin(u) * Math.cos(v) * 34, y: Math.cos(u) * 34, z: Math.sin(u) * Math.sin(v) * 34, r: 14, c: "#a855f7" });
-    for (let b = 0; b < 7; b++) {
-      let a = b * 0.9;
-      for (let t = 1; t <= 5; t++)
-        pts.push({ x: -125 - t * 14, y: Math.cos(a) * t * 16, z: Math.sin(a) * t * 16, r: 10, c: "#c084fc" });
-    }
-    for (let x = -90; x <= 115; x += 9) {
-      pts.push({ x: x, y: 0, z: 0, r: 11, c: "#facc15" });
-      let sg = Math.floor((x + 90) / 43);
-      if ((x + 90) % 43 < 31) {
-        let cl = "#38bdf8";
-        if (st === 1 && sg === 2) cl = "#f59e0b";
-        if (st === 2 && (sg === 2 || sg === 3)) cl = "#ef4444";
-        for (let a = 0; a < 6.28; a += 0.65)
-          pts.push({ x: x, y: Math.cos(a) * 15, z: Math.sin(a) * 15, r: 11, c: cl });
+    for (let u = 0; u < 6.28; u += 0.45) {
+      for (let v = 0; v < 3.14; v += 0.45) {
+        let px = Math.sin(v) * Math.cos(u) * 46, py = 54 + Math.cos(v) * 26, pz = -66 + Math.sin(v) * Math.sin(u) * 32;
+        pts.push({ x: px, y: py, z: pz, r: 14, c: "#c084fc" });
       }
     }
+    tubes.push({ x1: 0, y1: 35, z1: -18, x2: 0, y2: 122, z2: -22, r: 17, c: "#38bdf8" });
+    labels.push(
+      { x: 0, y: -76, z: 0, ox: 65, oy: -45, t: L.hemi },
+      { x: 0, y: 62, z: -92, ox: 75, oy: 35, t: L.cereb },
+      { x: 0, y: 112, z: -22, ox: -185, oy: 30, t: L.stem }
+    );
+    if (st > 0) {
+      let lr = st === 2 ? 25 : 18;
+      let lc = st === 2 ? "#ef4444" : "#f59e0b";
+      pts.push({ x: 34, y: -15, z: 18, r: lr, c: lc });
+      labels.push({ x: 34, y: -15, z: 18, ox: 80, oy: -10, t: st === 2 ? L.lesion : L.spasm });
+    }
+
+   } else if (mod === 2) {
+    let pulse = (Date.now() * 0.003) % 1;
+    pts.push({ x: -125, y: 0, z: 0, r: 34, c: "#a855f7" });
+    for (let b = 0; b < 7; b++) {
+      let a = b * 0.9;
+      tubes.push({ x1: -125, y1: 0, z1: 0, x2: -195, y2: Math.cos(a) * 80, z2: Math.sin(a) * 80, r: 6, c: "#c084fc" });
+    }
+    tubes.push({ x1: -100, y1: 0, z1: 0, x2: 120, y2: 0, z2: 0, r: 7, c: "#facc15" });
+    for (let sg = 0; sg < 5; sg++) {
+      let cx = -72 + sg * 43;
+      let cl = "#38bdf8", stCl = "#0284c7";
+      if (st === 1 && sg === 2) { cl = "#f59e0b"; stCl = "#b45309"; }
+      if (st === 2 && (sg === 2 || sg === 3)) { cl = "#ef4444"; stCl = "#991b1b"; }
+      let segs = 16, rM = 15, x1 = cx - 15, x2 = cx + 15;
+      for (let i = 0; i < segs; i++) {
+        let a1 = (i / segs) * 6.283, a2 = ((i + 1) / segs) * 6.283;
+        polys.push({
+          pts: [
+            { x: x1, y: Math.cos(a1) * rM, z: Math.sin(a1) * rM },
+            { x: x2, y: Math.cos(a1) * rM, z: Math.sin(a1) * rM },
+            { x: x2, y: Math.cos(a2) * rM, z: Math.sin(a2) * rM },
+            { x: x1, y: Math.cos(a2) * rM, z: Math.sin(a2) * rM }
+          ],
+          c: cl, stroke: stCl
+        });
+      }
+    }
+    if (st < 2) {
+      let px = -95 + pulse * 215;
+      pts.push({ x: px, y: 0, z: 0, r: 12, c: "#fef08a" });
+    }
     for (let b = -2; b <= 2; b++) {
-      for (let t = 1; t <= 4; t++)
-        pts.push({ x: 115 + t * 11, y: b * t * 8, z: (b % 2) * t * 8, r: 9, c: "#facc15" });
-      pts.push({ x: 168, y: b * 32, z: (b % 2) * 32, r: 15, c: st === 2 ? "#ef4444" : "#10b981" });
+      tubes.push({ x1: 118, y1: 0, z1: 0, x2: 168, y2: b * 32, z2: (b % 2) * 32, r: 5, c: "#facc15" });
+      pts.push({ x: 168, y: b * 32, z: (b % 2) * 32, r: 14, c: st === 2 ? "#ef4444" : "#10b981" });
     }
     labels.push(
       { x: -125, y: -34, z: 0, ox: -40, oy: -70, t: L.soma },
@@ -193,32 +224,34 @@ function buildScene(mod, st, lang) {
       { x: 10, y: -15, z: 0, ox: 20, oy: -65, t: L.axon },
       { x: 168, y: -32, z: 0, ox: 35, oy: -50, t: L.syn }
     );
+
   } else if (mod === 3) {
     let pulse = (Date.now() * 0.004) % 1;
-    for (let y = 130; y >= 35; y -= 8) {
-      pts.push({ x: 0, y: y, z: -30, r: 14, c: "#ef4444" });
-      if (Math.abs(((130 - y) / 95) - pulse) < 0.08) pts.push({ x: 0, y: y, z: -30, r: 16, c: "#fef08a" });
+    tubes.push({ x1: 0, y1: 130, z1: -30, x2: 0, y2: 35, z2: -30, r: 11, c: "#ef4444" });
+    pts.push({ x: 0, y: 130 - pulse * 95, z: -30, r: 13, c: "#fef08a" });
+
+    let segs = 24;
+    for (let i = 0; i < segs; i++) {
+      let a1 = (i / segs) * 6.283, a2 = ((i + 1) / segs) * 6.283;
+      let isSpasm = (st === 1 && a1 > 1.0 && a1 < 2.1);
+      tubes.push({
+        x1: Math.sin(a1) * 58, y1: 15, z1: Math.cos(a1) * 65 - 10,
+        x2: Math.sin(a2) * 58, y2: 15, z2: Math.cos(a2) * 65 - 10,
+        r: isSpasm ? 5 : 9, c: isSpasm ? "#f59e0b" : "#dc2626"
+      });
     }
-    for (let a = 0; a < 6.28; a += 0.14) {
-      let cx0 = Math.sin(a) * 58, cz0 = Math.cos(a) * 65 - 10;
-      let isSpasm = (st === 1 && a > 1.1 && a < 2.1);
-      pts.push({ x: cx0, y: 15, z: cz0, r: isSpasm ? 7 : 12, c: isSpasm ? "#f59e0b" : "#dc2626" });
-    }
+
     [-1, 1].forEach(side => {
-      for (let t = 0; t <= 1; t += 0.08) {
-        let bx = side * (58 + t * 85), by = 15 - t * 35, bz = -10 + t * 20;
-        let isRightSpasm = (st === 1 && side === 1 && t > 0.2 && t < 0.7);
-        pts.push({ x: bx, y: by, z: bz, r: isRightSpasm ? 6.5 : 11.5, c: isRightSpasm ? "#f59e0b" : "#ef4444" });
-        if (Math.abs(t - pulse) < 0.08 && !(st === 2 && side === 1 && t > 0.45))
-          pts.push({ x: bx, y: by, z: bz, r: 13.5, c: "#fef08a" });
+      let isRightSpasm = (st === 1 && side === 1);
+      tubes.push({ x1: side * 58, y1: 15, z1: -10, x2: side * 145, y2: -22, z2: 12, r: isRightSpasm ? 5 : 9, c: isRightSpasm ? "#f59e0b" : "#ef4444" });
+      tubes.push({ x1: side * 22, y1: 15, z1: 50, x2: side * 38, y2: -62, z2: 85, r: 8, c: "#f87171" });
+      if (!(st === 2 && side === 1 && pulse > 0.45)) {
+        pts.push({ x: side * (58 + pulse * 87), y: 15 - pulse * 37, z: -10 + pulse * 22, r: 11, c: "#fef08a" });
       }
-      for (let t = 0; t <= 1; t += 0.1)
-        pts.push({ x: side * (22 + t * 15), y: 15 - t * 75, z: 50 + t * 35, r: 10, c: "#f87171" });
     });
+
     if (st === 2) {
-      for (let u = 0; u < 3.14; u += 0.35)
-        for (let v = 0; v < 6.28; v += 0.35)
-          pts.push({ x: 88 + Math.sin(u) * Math.cos(v) * 24, y: -5 + Math.cos(u) * 24, z: 5 + Math.sin(u) * Math.sin(v) * 24, r: 11, c: "#b91c1c" });
+      pts.push({ x: 92, y: -6, z: 4, r: 23, c: "#ef4444" });
       labels.push({ x: 95, y: -15, z: 5, ox: 55, oy: -40, t: L.aneur });
     } else if (st === 1) {
       labels.push({ x: 88, y: 0, z: 0, ox: 55, oy: -35, t: L.spasm });
@@ -228,41 +261,28 @@ function buildScene(mod, st, lang) {
       { x: -58, y: 15, z: -10, ox: -185, oy: 15, t: L.willis },
       { x: -120, y: -15, z: 5, ox: -180, oy: -40, t: L.mca }
     );
-  } else if (mod === 4) {
+
+   } else if (mod === 4) {
     let pulse = (Date.now() * 0.004) % 1;
     [-95, 0, 95].forEach((y, idx) => {
-      let zOff = (idx === 1) ? 10 : 0;
-      for (let a = 0; a < 6.28; a += 0.26)
-        for (let h = -16; h <= 16; h += 10)
-          pts.push({ x: Math.cos(a) * 56, y: y + h, z: zOff + Math.sin(a) * 48, r: 12, c: "#cbd5e1" });
-      for (let z = -48; z >= -112; z -= 12)
-        pts.push({ x: 0, y: y, z: zOff + z, r: 13, c: "#94a3b8" });
-      [-1, 1].forEach(side => {
-        for (let x = 48; x <= 76; x += 10)
-          pts.push({ x: side * x, y: y, z: zOff - 18, r: 10, c: "#94a3b8" });
-      });
+      let zOff = (idx === 1) ? 8 : 0;
+      addCylinder(y, 56, 48, 32, "#cbd5e1", "#94a3b8");
+      tubes.push({ x1: 0, y1: y, z1: zOff - 45, x2: 0, y2: y + 6, z2: zOff - 115, r: 10, c: "#94a3b8" });
+      tubes.push({ x1: -76, y1: y, z1: zOff - 18, x2: 76, y2: y, z2: zOff - 18, r: 9, c: "#94a3b8" });
     });
-    [-48, 48].forEach(dy => {
-      for (let a = 0; a < 6.28; a += 0.24)
-        for (let h = -9; h <= 9; h += 9)
-          pts.push({ x: Math.cos(a) * 54, y: dy + h, z: 5 + Math.sin(a) * 46, r: 12, c: "#38bdf8" });
-    });
-    for (let y = -135; y <= 135; y += 10)
-      pts.push({ x: 0, y: y, z: -65, r: 16, c: "#facc15" });
+    [-48, 48].forEach(dy => addCylinder(dy, 54, 46, 18, "#38bdf8", "#0284c7"));
+    tubes.push({ x1: 0, y1: -135, z1: -65, x2: 0, y2: 135, z2: -65, r: 13, c: "#facc15" });
+
     [-1, 1].forEach(side => {
-      for (let y = 135; y >= -135; y -= 10) {
-        let isSpasm = (st === 1 && side === 1 && y > -45 && y < 45);
-        pts.push({ x: side * 66, y: y, z: -18, r: isSpasm ? 6 : 11, c: isSpasm ? "#f59e0b" : "#ef4444" });
-        if (Math.abs(((135 - y) / 270) - pulse) < 0.06)
-          pts.push({ x: side * 66, y: y, z: -18, r: 13, c: "#fef08a" });
-      }
+      let isSpasm = (st === 1 && side === 1);
+      tubes.push({ x1: side * 66, y1: 135, z1: -18, x2: side * 66, y2: -135, z2: -18, r: isSpasm ? 5 : 9, c: isSpasm ? "#f59e0b" : "#ef4444" });
+      pts.push({ x: side * 66, y: 135 - pulse * 270, z: -18, r: 11, c: "#fef08a" });
     });
+
     if (st === 1) {
       labels.push({ x: 66, y: 0, z: -18, ox: 55, oy: -25, t: L.vaspasm });
     } else if (st === 2) {
-      for (let dx = -10; dx <= 10; dx += 8)
-        for (let dy = -8; dy <= 8; dy += 8)
-          pts.push({ x: dx, y: -48 + dy, z: -52, r: 19, c: "#ef4444" });
+      pts.push({ x: 0, y: -48, z: -52, r: 19, c: "#ef4444" });
       labels.push({ x: 0, y: -48, z: -52, ox: 65, oy: -35, t: L.chern });
     }
     labels.push(
@@ -270,59 +290,77 @@ function buildScene(mod, st, lang) {
       { x: -66, y: 40, z: -18, ox: -210, oy: 10, t: L.va },
       { x: -56, y: -95, z: 0, ox: -195, oy: -25, t: L.c4 }
     );
+
   } else if (mod === 5) {
     let beat = 1 + Math.sin(Date.now() * 0.007) * 0.055;
-    for (let u = 0; u < 3.14; u += 0.2) {
-      for (let v = 0; v < 6.28; v += 0.2) {
-        let taper = 1 - (u / 3.14) * 0.55;
-        let hx = Math.sin(u) * Math.cos(v) * 68 * taper * beat + (u / 3.14) * 18;
-        let hy = -Math.cos(u) * 85 * beat + 15;
-        let hz = Math.sin(u) * Math.sin(v) * 58 * taper * beat;
-        let isIschemia = (st === 2 && hx > 10 && hy > 20 && hz > 10);
-        pts.push({ x: hx, y: hy, z: hz, r: 14, c: isIschemia ? "#475569" : "#e11d48" });
+    let uStep = 0.28, vStep = 0.314;
+    for (let u = 0; u < 3.14; u += uStep) {
+      for (let v = 0; v < 6.28; v += vStep) {
+        let pts4 = [[u, v], [u + uStep, v], [u + uStep, v + vStep], [u, v + vStep]].map(([uu, vv]) => {
+          let taper = 1 - (uu / 3.14) * 0.55;
+          return {
+            x: Math.sin(uu) * Math.cos(vv) * 68 * taper * beat + (uu / 3.14) * 18,
+            y: -Math.cos(uu) * 85 * beat + 15,
+            z: Math.sin(uu) * Math.sin(vv) * 58 * taper * beat
+          };
+        });
+        let isIschemia = (st === 2 && pts4[0].x > 8 && pts4[0].y > 18 && pts4[0].z > 8);
+        polys.push({ pts: pts4, c: isIschemia ? "#475569" : "#e11d48", stroke: isIschemia ? "#334155" : "#be123c" });
       }
     }
-    for (let a = 0; a <= 3.14; a += 0.16) {
-      pts.push({ x: -10 + Math.cos(a) * 34, y: -70 - Math.sin(a) * 48, z: -5, r: 16, c: "#ef4444" });
+    for (let i = 0; i < 12; i++) {
+      let a1 = (i / 12) * 3.14, a2 = ((i + 1) / 12) * 3.14;
+      tubes.push({ x1: -10 + Math.cos(a1) * 34, y1: -70 - Math.sin(a1) * 48, z1: -5, x2: -10 + Math.cos(a2) * 34, y2: -70 - Math.sin(a2) * 48, z2: -5, r: 14, c: "#ef4444" });
     }
-    for (let y = -125; y <= -55; y += 11) {
-      pts.push({ x: -38, y: y, z: 10, r: 14, c: "#3b82f6" });
-    }
-    for (let t = 0; t <= 1; t += 0.07) {
-      let cx = 12 + t * 28, cy = -35 + t * 105, cz = 48 * (1 - t * 0.35);
-      let isSpasm = (st === 1 && t > 0.3 && t < 0.7);
-      let isBlocked = (st === 2 && t >= 0.45);
-      pts.push({ x: cx, y: cy, z: cz, r: isSpasm ? 5 : 9, c: isBlocked ? "#1e293b" : (isSpasm ? "#f59e0b" : "#facc15") });
-    }
+    tubes.push({ x1: -38, y1: -125, z1: 10, x2: -38, y2: -55, z2: 10, r: 12, c: "#3b82f6" });
+    tubes.push({ x1: 12, y1: -35, z1: 52, x2: 26, y2: 18, z2: 45, r: st === 1 ? 4.5 : 7.5, c: st === 1 ? "#f59e0b" : "#facc15" });
+    tubes.push({ x1: 26, y1: 18, z1: 45, x2: 40, y2: 70, z2: 34, r: 7.5, c: st === 2 ? "#1e293b" : "#facc15" });
+
     labels.push(
       { x: -10, y: -118, z: -5, ox: 55, oy: -25, t: L.aorta },
       { x: -38, y: -90, z: 10, ox: -195, oy: -20, t: L.svc },
-      { x: 25, y: 15, z: 42, ox: 65, oy: 10, t: st === 2 ? L.isch : (st === 1 ? L.cspasm : L.cor) }
+      { x: 25, y: 15, z: 45, ox: 65, oy: 10, t: st === 2 ? L.isch : (st === 1 ? L.cspasm : L.cor) }
     );
-  } else {
+
+    } else {
     let flow = (Date.now() * 0.0025) % 1;
-    for (let y = -140; y <= 140; y += 11) {
-      let rad = st === 0 ? 34 : (st === 1 ? 46 : 52 + Math.sin(y * 0.065) * 18);
-      let bend = st === 2 ? Math.sin(y * 0.05) * 24 : 0;
-      let vColor = st === 0 ? "rgba(56, 189, 248, 0.32)" : (st === 1 ? "rgba(245, 158, 11, 0.35)" : "rgba(239, 68, 68, 0.38)");
-      for (let a = 0; a < 6.28; a += 0.35) {
-        pts.push({ x: bend + Math.cos(a) * rad, y: y, z: Math.sin(a) * rad, r: st === 2 ? 13 : 10, c: vColor });
+    let ySteps = 16, aSteps = 18;
+    let vColor = st === 0 ? "rgba(56, 189, 248, 0.22)" : (st === 1 ? "rgba(245, 158, 11, 0.25)" : "rgba(239, 68, 68, 0.28)");
+    let vStroke = st === 0 ? "rgba(56, 189, 248, 0.35)" : (st === 1 ? "rgba(245, 158, 11, 0.4)" : "rgba(239, 68, 68, 0.45)");
+
+    for (let j = 0; j < ySteps; j++) {
+      let y1 = -140 + (j / ySteps) * 280, y2 = -140 + ((j + 1) / ySteps) * 280;
+      let r1 = st === 0 ? 34 : (st === 1 ? 46 : 52 + Math.sin(y1 * 0.065) * 18);
+      let r2 = st === 0 ? 34 : (st === 1 ? 46 : 52 + Math.sin(y2 * 0.065) * 18);
+      let b1 = st === 2 ? Math.sin(y1 * 0.05) * 24 : 0;
+      let b2 = st === 2 ? Math.sin(y2 * 0.05) * 24 : 0;
+      for (let i = 0; i < aSteps; i++) {
+        let a1 = (i / aSteps) * 6.283, a2 = ((i + 1) / aSteps) * 6.283;
+        polys.push({
+          pts: [
+            { x: b1 + Math.cos(a1) * r1, y: y1, z: Math.sin(a1) * r1 },
+            { x: b1 + Math.cos(a2) * r1, y: y1, z: Math.sin(a2) * r1 },
+            { x: b2 + Math.cos(a2) * r2, y: y2, z: Math.sin(a2) * r2 },
+            { x: b2 + Math.cos(a1) * r2, y: y2, z: Math.sin(a1) * r2 }
+          ],
+          c: vColor, stroke: vStroke
+        });
       }
     }
+
     [-55, 55].forEach(vy => {
       let gap = st === 0 ? 4 : (st === 1 ? 18 : 30);
-      for (let t = 0; t <= 1; t += 0.14) {
-        pts.push({ x: -32 + t * (28 - gap * 0.4), y: vy - t * 18, z: 0, r: 9, c: "#facc15" });
-        pts.push({ x: 32 - t * (28 - gap * 0.4), y: vy - t * 18, z: 0, r: 9, c: "#facc15" });
-      }
+      tubes.push({ x1: -34, y1: vy, z1: 0, x2: -gap * 0.4, y2: vy - 18, z2: 0, r: 6, c: "#facc15" });
+      tubes.push({ x1: 34, y1: vy, z1: 0, x2: gap * 0.4, y2: vy - 18, z2: 0, r: 6, c: "#facc15" });
     });
+
     for (let i = 0; i < 6; i++) {
       let p = (flow + i / 6) % 1;
       let fy = st === 2 ? (110 - Math.sin(p * 6.28) * 20) : (130 - p * 260);
-      pts.push({ x: 0, y: fy, z: 0, r: 12, c: "#60a5fa" });
+      pts.push({ x: 0, y: fy, z: 0, r: 11, c: "#60a5fa" });
       if (st > 0 && i % 2 === 0) {
         let ry = -55 + p * 95;
-        pts.push({ x: 14, y: ry, z: 8, r: 10, c: "#f87171" });
+        pts.push({ x: 14, y: ry, z: 8, r: 10, c: "#ef4444" });
       }
     }
     labels.push(
@@ -331,5 +369,6 @@ function buildScene(mod, st, lang) {
       { x: 0, y: 85, z: 0, ox: 55, oy: 25, t: st === 2 ? L.vnodes : L.vflow }
     );
   }
-  return { pts, labels };
+  return { pts, tubes, polys, labels };
 }
+
