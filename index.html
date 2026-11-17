@@ -1,33 +1,41 @@
 <!DOCTYPE html>
 <html lang="ru">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>OpenNeuroAtlas 3D — Открытый медицинский 3D-атлас</title>
-  <link rel="stylesheet" href="style.css">
+  <link rel="stylesheet" href="style.css" />
+  <style>
+    .disc-overlay { position: fixed; inset: 0; background: rgba(9, 13, 22, 0.92); backdrop-filter: blur(8px); z-index: 9999; display: flex; align-items: center; justify-content: center; padding: 20px; }
+    .disc-modal { background: #111827; border: 1px solid #374151; border-top: 4px solid #f59e0b; border-radius: 12px; max-width: 520px; padding: 24px; color: #e2e8f0; box-shadow: 0 20px 50px rgba(0,0,0,0.7); }
+    .disc-modal h2 { font-size: 18px; color: #fbbf24; margin-bottom: 12px; }
+    .disc-modal p { font-size: 13.5px; line-height: 1.55; color: #cbd5e1; margin-bottom: 18px; }
+    .disc-btn { width: 100%; background: #0284c7; color: #fff; border: none; padding: 11px; border-radius: 8px; font-weight: 700; font-size: 14px; cursor: pointer; }
+    .disc-btn:hover { background: #0369a1; }
+    .lang-select { background: #1f2937; color: #cbd5e1; border: 1px solid #374151; padding: 4px 8px; border-radius: 5px; font-size: 11px; font-weight: 600; cursor: pointer; }
+  </style>
 </head>
 <body>
-<div id="medDisclaimerModal" style="position:fixed;inset:0;background:rgba(9,13,22,0.96);z-index:9999;display:flex;align-items:center;justify-content:center;padding:20px;">
-  <div style="max-width:520px;background:#1e293b;border:2px solid #38bdf8;border-radius:14px;padding:26px;color:#f8fafc;box-shadow:0 20px 50px rgba(0,0,0,0.8);font-family:'Segoe UI',sans-serif;">
-    <h2 id="discTitle" style="margin:0 0 12px;color:#38bdf8;font-size:20px;">⚠️ Важное медицинское уведомление</h2>
-    <p id="discText" style="font-size:14px;line-height:1.55;color:#cbd5e1;margin:0 0 18px;">
-      Платформа <b>OpenNeuroAtlas 3D</b> предназначена исключительно для образовательных и ознакомительных целей. Представленные 3D-модели и тексты не являются медицинской консультацией, диагнозом или назначением лечения. При любых симптомах обратитесь к лечащему врачу.
-    </p>
-    <button id="discAcceptBtn" onclick="acceptMedicalDisclaimer()" style="width:100%;padding:12px;background:#0284c7;color:#fff;border:none;border-radius:8px;font-size:15px;font-weight:bold;cursor:pointer;">
-      Я понимаю и принимаю условия
-    </button>
+  <div class="disc-overlay" id="disclaimerModal">
+    <div class="disc-modal">
+      <h2>⚠ Важное медицинское уведомление</h2>
+      <p>
+        Платформа <strong>OpenNeuroAtlas 3D</strong> предназначена исключительно для образовательных и ознакомительных целей.
+        Представленные 3D-модели и тексты не являются медицинской консультацией, диагнозом или назначением лечения.
+        При любых симптомах обратитесь к лечащему врачу.
+      </p>
+      <button class="disc-btn" onclick="document.getElementById('disclaimerModal').style.display='none'">Я понимаю и принимаю условия</button>
+    </div>
   </div>
-</div>
-
 
   <aside id="sidebar">
     <div>
       <div class="brand-row">
         <span class="badge">OPEN SOURCE • MIT</span>
         <div class="tools">
-          <button id="editBtn" class="tool-btn" onclick="toggleEditor()">Режим врача</button>
-          <select id="langSelect" class="tool-btn" onchange="changeLang(this.value)" title="Language">
-            <option value="ru" selected>RU • Русский</option>
+          <button class="tool-btn" id="editBtn" onclick="toggleEditor()">Режим врача</button>
+          <select class="lang-select" id="langSelect" onchange="setLang(this.value)">
+            <option value="ru">RU • Русский</option>
             <option value="en">EN • English</option>
             <option value="es">ES • Español</option>
             <option value="de">DE • Deutsch</option>
@@ -37,71 +45,70 @@
       </div>
 
       <h1>OpenNeuroAtlas 3D</h1>
-      <p id="subTxt" class="subtitle">Международная образовательная платформа нейроанатомии, кардиологии, флебологии и клинической тактики.</p>
+      <p class="subtitle" id="subText"></p>
 
-      <div id="modLabel" class="section-label">1. АНАТОМИЧЕСКИЙ РАЗДЕЛ</div>
-      <div class="tabs">
-        <button id="tab0" class="tab active" onclick="selectModule(0, this)">Позвоночник</button>
-        <button id="tab1" class="tab" onclick="selectModule(1, this)">Головной мозг</button>
-        <button id="tab2" class="tab" onclick="selectModule(2, this)">Нейрон и Аксон</button>
-        <button id="tab3" class="tab" onclick="selectModule(3, this)">Сосуды мозга</button>
-        <button id="tab4" class="tab" onclick="selectModule(4, this)">Шейный отдел</button>
-        <button id="tab5" class="tab" onclick="selectModule(5, this)">Сердце и сосуды</button>
-        <button id="tab6" class="tab" onclick="selectModule(6, this)">Вены ног и варикоз</button>
-		<button class="tab" id="tab7" onclick="selectModule(7, this)">Коленный сустав</button>
+      <div class="section-label" id="modLabel"></div>
+      <div class="tabs" id="tabsBox"></div>
 
-      </div>
-      <div id="stateLabel" class="section-label">2. КЛИНИЧЕСКАЯ СТАДИЯ</div>
-      <div class="states">
-        <button id="st0" class="state-btn active" onclick="selectState(0, this)">1. Анатомическая норма</button>
-        <button id="st1" class="state-btn" onclick="selectState(1, this)">2. Протрузия диска (Без операции)</button>
-        <button id="st2" class="state-btn" onclick="selectState(2, this)">3. Грыжа с компрессией (Хирургия)</button>
-      </div>
+      <div class="section-label" id="stateLabel"></div>
+      <div class="states" id="statesBox"></div>
 
-      <div id="cardBox" class="clinical-card">
-        <span id="pillTxt" class="status-pill">Норма</span>
-        <h3 id="cardTitle">Здоровый позвоночно-двигательный сегмент</h3>
-        <p id="cardDesc">Межпозвонковый диск (синий) сохраняет высоту. Спинной мозг и корешки (желтые) свободны.</p>
+      <div class="clinical-card" id="clinicalCard">
+        <span class="status-pill" id="statusPill"></span>
+        <h3 id="cardTitle"></h3>
+        <p id="cardDesc"></p>
         <div class="tactics-box">
-          <strong id="tacticsLabel">Клиническая тактика:</strong>
-          <span id="cardTactics">Операция не требуется. Рекомендуется укрепление мышечного корсета и ЛФК.</span>
-          <div style="margin-top: 8px; font-size: 11px; color: #64748b;">
-            <span id="authorLabel">Редактор / Консультант: </span>
-            <span id="cardAuthor" style="color: #94a3b8;">Базовая редакция OpenNeuroAtlas</span>
+          <strong id="tacticsLabel"></strong>
+          <span id="cardTactics"></span>
+          <div style="margin-top:8px; font-size:11px; color:#64748b;">
+            <span id="authorLabel"></span><span id="cardAuthor"></span>
           </div>
         </div>
       </div>
 
-      <div id="editorBox" class="editor-box">
-        <div id="edTitle" class="section-label" style="color: #38bdf8;">РЕДАКТИРОВАНИЕ И АВТОПРОВЕРКА</div>
-        <input type="text" id="editAuthor" placeholder="ФИО врача, степень, клиника">
-        <textarea id="editDesc" placeholder="Клиническое описание..."></textarea>
-        <textarea id="editTactics" placeholder="Тактика лечения..."></textarea>
+      <div class="editor-box" id="editorBox">
+        <div class="section-label" style="margin-bottom:6px;">РЕДАКТИРОВАНИЕ И АВТОПРОВЕРКА</div>
+        <input type="text" id="edAuthor" placeholder="ФИО, специализация и клиника" />
+        <input type="text" id="edTitle" placeholder="Заголовок клинической стадии" />
+        <textarea id="edDesc" placeholder="Описание (дозировки, рецепты и реклама блокируются)"></textarea>
+        <textarea id="edTactics" placeholder="Клиническая тактика"></textarea>
         <div class="editor-actions">
-          <button id="saveBtn" class="save-btn" onclick="saveDoctorEdit()">Проверить и применить</button>
-          <button class="export-btn" onclick="exportDatabase()">JSON</button>
-          <button id="ghBtn" class="export-btn" style="background: #0284c7; flex-basis: 100%; margin-top: 4px;" onclick="sendToGitHub()">Отправить правку в GitHub ↗</button>
+          <button class="save-btn" onclick="applyEdit()">Проверить и применить</button>
+          <button class="export-btn" onclick="exportJSON()">JSON</button>
+          <button class="export-btn" onclick="openGithubPR()">Отправить правку в GitHub ↗</button>
         </div>
-        <div id="checkReport" style="display: none; margin-top: 8px; padding: 8px; border-radius: 5px; font-size: 11.5px; line-height: 1.4;"></div>
+        <div id="guardMsg" style="font-size:11px; margin-top:6px;"></div>
       </div>
     </div>
 
-    <div id="discTxt" class="disclaimer">
-      Образовательный проект с открытым исходным кодом (MIT). Визуализация предназначена для врачей, студентов и пациентов и не заменяет очную консультацию специалиста.
-    </div>
+    <div class="disclaimer" id="discText"></div>
   </aside>
 
   <main id="viewport">
-    <canvas id="sceneCanvas"></canvas>
-    <div class="hud-bar">
-      <span id="hudHint" class="hud-hint">ЛКМ — вращение • Колесико — масштаб</span>
-      <button id="pauseBtn" class="hud-btn" onclick="togglePause()">Пауза ⏸</button>
-      <button id="fsBtn" class="hud-btn" onclick="toggleFullscreen()">Во весь экран</button>
-      <button class="hud-btn" onclick="changeZoom(-0.4)">−</button>
-      <button class="hud-btn" onclick="changeZoom(0.4)">+</button>
+    <canvas id="canvas3d"></canvas>
+    <div class="hud-bar" style="flex-wrap:wrap; justify-content:flex-end; max-width:92%;">
+      <span class="hud-hint" id="hintText"></span>
+      <button class="hud-btn" id="pauseBtn" onclick="togglePause()">Пауза ⏸</button>
+      <button class="hud-btn" id="xrayBtn" onclick="toggleXray()">Рентген 🩻</button>
+      <button class="hud-btn" onclick="setCameraView('front')">Спереди</button>
+      <button class="hud-btn" onclick="setCameraView('side')">Сбоку</button>
+      <button class="hud-btn" onclick="setCameraView('top')">Сверху</button>
+      <button class="hud-btn" id="fsBtn" onclick="toggleFullscreen()">Во весь экран</button>
+      <button class="hud-btn" onclick="zoomStep(-0.15)">−</button>
+      <button class="hud-btn" onclick="zoomStep(0.15)">+</button>
     </div>
   </main>
 
   <script src="data.js"></script>
-  <script src="engine.js"></script>
-  <script src="app.js"></script>
+  <script src="part1.js"></script>
+  <script src="part2.js"></script>
+  <script src="part3.js"></script>
+  <script src="part4.js"></script>
+  <script src="part5.js"></script>
+  <script src="part6.js"></script>
+  <script src="part7.js"></script>
+  <script src="part8.js"></script>
+  <script src="part9.js"></script>
+  <script src="part10.js"></script>
+</body>
+</html>
