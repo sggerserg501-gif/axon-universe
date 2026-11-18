@@ -1,4 +1,5 @@
 window.DB = window.DB || {};
+window.AtlasParts = window.AtlasParts || [];
 var currentLang = "ru", currentMod = 0, currentState = 0;
 var rotX = 0.28, rotY = -0.62, zoom = 1.35;
 var isPaused = true, isDragging = false, isXray = false, timeTick = 0;
@@ -9,9 +10,11 @@ var ctx = canvas ? canvas.getContext("2d") : null;
 function resizeCanvas() {
   if (!canvas || !canvas.parentElement) return;
   const r = canvas.parentElement.getBoundingClientRect();
-  if (r.width > 0 && r.height > 0 && (canvas.width !== Math.floor(r.width) || canvas.height !== Math.floor(r.height))) {
-    canvas.width = Math.floor(r.width);
-    canvas.height = Math.floor(r.height);
+  const w = Math.max(300, Math.floor(r.width));
+  const h = Math.max(300, Math.floor(r.height));
+  if (canvas.width !== w || canvas.height !== h) {
+    canvas.width = w;
+    canvas.height = h;
   }
 }
 
@@ -21,7 +24,11 @@ function project3D(x, y, z) {
   const cx = Math.cos(rotX), sx = Math.sin(rotX);
   const y2 = y * cx - z1 * sx, z2 = y * sx + z1 * cx;
   const scale = (520 / Math.max(80, 520 + z2)) * zoom;
-  return { x: (canvas ? canvas.width / 2 : 400) + x1 * scale, y: (canvas ? canvas.height / 2 : 300) + y2 * scale, z: z2, scale: scale };
+  return {
+    x: (canvas ? canvas.width / 2 : 400) + x1 * scale,
+    y: (canvas ? canvas.height / 2 : 300) + y2 * scale,
+    z: z2, scale: scale
+  };
 }
 
 function draw3DSphere(x, y, r, color) {
@@ -68,7 +75,7 @@ var setView = setCameraView;
 function togglePause() { isPaused = !isPaused; updatePauseBtn(); }
 function updatePauseBtn() {
   const btn = document.getElementById("pauseBtn"), d = DB[currentLang] || DB.ru;
-  if (btn && d) btn.textContent = isPaused ? (d.play || "Пуск ▶") : (d.pause || "Пауза ⏸");
+  if (btn) btn.textContent = isPaused ? ((d && d.play) || "Пуск ▶") : ((d && d.pause) || "Пауза ⏸");
 }
 function toggleXray() { isXray = !isXray; const btn = document.getElementById("xrayBtn"); if (btn) btn.classList.toggle("active", isXray); }
 function zoomStep(d) { zoom = Math.max(0.45, Math.min(3.5, zoom + d)); }
@@ -88,8 +95,13 @@ function openGithubPR() { window.open("https://github.com", "_blank"); }
 
 function updateUI() {
   const d = DB[currentLang] || DB.ru;
-  if (!d || !d.modules) return;
   const setTxt = (id, v) => { const el = document.getElementById(id); if (el && v !== undefined) el.textContent = v; };
+
+  if (!d || !d.modules) {
+    setTxt("subText", "⚠ Ошибка: файл data.js не загрузился или поврежден!");
+    return;
+  }
+
   setTxt("subText", d.sub); setTxt("modLabel", d.modLabel); setTxt("stateLabel", d.stateLabel);
   setTxt("tacticsLabel", d.tacticsLabel); setTxt("authorLabel", d.authorLabel); setTxt("discText", d.disc);
   setTxt("hintText", d.hint); setTxt("editBtn", d.editBtn); setTxt("xrayBtn", d.xrayBtn); setTxt("fsBtn", d.fsBtn);
@@ -122,17 +134,38 @@ function updateUI() {
   updatePauseBtn();
 }
 
+function drawStatusMsg(text) {
+  if (!ctx || !canvas) return;
+  ctx.save();
+  ctx.fillStyle = "#fbbf24";
+  ctx.font = "bold 16px system-ui, sans-serif";
+  ctx.textAlign = "center";
+  ctx.fillText(text, canvas.width / 2, canvas.height / 2);
+  ctx.restore();
+}
+
 function renderLoop() {
   requestAnimationFrame(renderLoop);
   resizeCanvas();
   if (!ctx || !canvas) return;
   ctx.clearRect(0, 0, canvas.width, canvas.height);
+
   if (!isPaused && !isDragging) rotY += 0.006;
   timeTick += 0.03;
 
   const builder = window.AtlasParts && window.AtlasParts[currentMod];
-  if (!builder) return;
-  const model = builder(currentState, timeTick);
+  if (typeof builder !== "function") {
+    drawStatusMsg("⚠ 3D-модуль #" + (currentMod + 1) + " не загружен (проверьте файлы part3.js - part9.js)");
+    return;
+  }
+
+  let model = null;
+  try {
+    model = builder(currentState, timeTick);
+  } catch (err) {
+    drawStatusMsg("⚠ Ошибка в 3D-модуле #" + (currentMod + 1) + ": " + err.message);
+    return;
+  }
   if (!model) return;
 
   const q = [];
