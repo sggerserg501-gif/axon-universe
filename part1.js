@@ -3,7 +3,7 @@ const ctx = canvas.getContext("2d");
 
 let rotX = 0.25;
 let rotY = -0.45;
-let zoom = 2.2;
+let zoom = 1.65;
 let isDragging = false;
 let lastMouseX = 0;
 let lastMouseY = 0;
@@ -35,9 +35,9 @@ function project3D(x, y, z) {
   const y2 = y * cx - z1 * sx;
   const z2 = y * sx + z1 * cx;
 
-const fov = 720;
-const sc = (fov / (fov + z2 + 80)) * zoom * 1.45;
-
+  const baseSize = Math.min(canvas.width || 800, canvas.height || 600);
+  const fov = 820;
+  const sc = (fov / (fov + z2 + 40)) * zoom * (baseSize / 310);
   return {
     x: canvas.width * 0.5 + x1 * sc,
     y: canvas.height * 0.5 + y2 * sc,
@@ -70,7 +70,7 @@ canvas.addEventListener("wheel", function (e) {
 }, { passive: false });
 
 function zoomStep(delta) {
-  zoom = Math.max(0.45, Math.min(2.4, zoom + delta));
+  zoom = Math.max(0.45, Math.min(4.5, zoom + delta));
 }
 
 function setCameraView(mode) {
