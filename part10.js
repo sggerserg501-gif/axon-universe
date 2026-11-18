@@ -1,3 +1,75 @@
+window.DB = window.DB || {};
+var currentLang = window.currentLang || "ru";
+var currentMod = window.currentMod || 0;
+var currentState = window.currentState || 0;
+var rotX = window.rotX || 0.25;
+var rotY = window.rotY || -0.45;
+var zoom = window.zoom || 1.35;
+var isPaused = true;
+var isDragging = false;
+var isXray = false;
+var timeTick = 0;
+
+var canvas = document.getElementById("canvas3d");
+var ctx = canvas ? canvas.getContext("2d") : null;
+
+if (typeof resizeCanvas !== "function") {
+  function resizeCanvas() {
+    if (!canvas) return;
+    const rect = canvas.parentElement.getBoundingClientRect();
+    if (canvas.width !== Math.floor(rect.width) || canvas.height !== Math.floor(rect.height)) {
+      canvas.width = Math.floor(rect.width);
+      canvas.height = Math.floor(rect.height);
+    }
+  }
+}
+
+if (typeof project3D !== "function") {
+  function project3D(x, y, z) {
+    const cy = Math.cos(rotY), sy = Math.sin(rotY);
+    const x1 = x * cy - z * sy;
+    const z1 = x * sy + z * cy;
+    const cx = Math.cos(rotX), sx = Math.sin(rotX);
+    const y2 = y * cx - z1 * sx;
+    const z2 = y * sx + z1 * cx;
+    const fov = 520;
+    const scale = (fov / (fov + z2)) * zoom;
+    return {
+      x: (canvas ? canvas.width / 2 : 400) + x1 * scale,
+      y: (canvas ? canvas.height / 2 : 300) + y2 * scale,
+      z: z2,
+      scale: scale
+    };
+  }
+}
+
+if (typeof draw3DSphere !== "function") {
+  function draw3DSphere(x, y, r, color) {
+    ctx.save();
+    ctx.beginPath();
+    ctx.arc(x, y, r, 0, Math.PI * 2);
+    ctx.fillStyle = isXray ? "rgba(56,189,248,0.22)" : color;
+    ctx.fill();
+    ctx.strokeStyle = isXray ? "rgba(125,211,252,0.75)" : "rgba(15,23,42,0.35)";
+    ctx.lineWidth = 1.2;
+    ctx.stroke();
+    ctx.restore();
+  }
+}
+
+if (typeof draw3DTube !== "function") {
+  function draw3DTube(x1, y1, x2, y2, r, color) {
+    ctx.save();
+    ctx.beginPath();
+    ctx.moveTo(x1, y1);
+    ctx.lineTo(x2, y2);
+    ctx.strokeStyle = isXray ? "rgba(56,189,248,0.35)" : color;
+    ctx.lineWidth = r * 2;
+    ctx.lineCap = "round";
+    ctx.stroke();
+    ctx.restore();
+  }
+}
 const sectionBaseZoom = [1.35, 1.25, 1.55, 1.55, 1.35, 1.45, 2.15, 1.45];
 const sectionBaseAngles = [
   { rx: 0.28, ry: -0.62 }, // 0: Позвоночник (вид сбоку-спереди, видны диск и нервы)
