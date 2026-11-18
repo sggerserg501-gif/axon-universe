@@ -17,10 +17,11 @@ let isXray = false;
 window.AtlasParts = {};
 
 function resizeCanvas() {
+  if (!canvas) return;
   const rect = canvas.getBoundingClientRect();
-  if (canvas.width !== rect.width || canvas.height !== rect.height) {
-    canvas.width = rect.width;
-    canvas.height = rect.height;
+  if (canvas.width !== Math.floor(rect.width) || canvas.height !== Math.floor(rect.height)) {
+    canvas.width = Math.max(300, Math.floor(rect.width));
+    canvas.height = Math.max(300, Math.floor(rect.height));
   }
 }
 
@@ -46,11 +47,18 @@ function project3D(x, y, z) {
   };
 }
 
-canvas.addEventListener("mousedown", function (e) {
-  isDragging = true;
-  lastMouseX = e.clientX;
-  lastMouseY = e.clientY;
-});
+if (canvas) {
+  canvas.addEventListener("mousedown", function (e) {
+    isDragging = true;
+    lastMouseX = e.clientX;
+    lastMouseY = e.clientY;
+  });
+
+  canvas.addEventListener("wheel", function (e) {
+    e.preventDefault();
+    zoomStep(e.deltaY < 0 ? 0.1 : -0.1);
+  }, { passive: false });
+}
 
 window.addEventListener("mouseup", function () {
   isDragging = false;
@@ -63,11 +71,6 @@ window.addEventListener("mousemove", function (e) {
   lastMouseX = e.clientX;
   lastMouseY = e.clientY;
 });
-
-canvas.addEventListener("wheel", function (e) {
-  e.preventDefault();
-  zoomStep(e.deltaY < 0 ? 0.1 : -0.1);
-}, { passive: false });
 
 function zoomStep(delta) {
   zoom = Math.max(0.45, Math.min(4.5, zoom + delta));
