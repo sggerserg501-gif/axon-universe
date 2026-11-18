@@ -3,7 +3,7 @@ const ctx = canvas.getContext("2d");
 
 let rotX = 0.25;
 let rotY = -0.45;
-let zoom = 1.0;
+let zoom = 2.2;
 let isDragging = false;
 let lastMouseX = 0;
 let lastMouseY = 0;
