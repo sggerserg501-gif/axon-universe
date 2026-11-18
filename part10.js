@@ -2,8 +2,8 @@ window.DB = window.DB || {};
 var currentLang = window.currentLang || "ru";
 var currentMod = window.currentMod || 0;
 var currentState = window.currentState || 0;
-var rotX = window.rotX || 0.25;
-var rotY = window.rotY || -0.45;
+var rotX = window.rotX || 0.28;
+var rotY = window.rotY || -0.62;
 var zoom = window.zoom || 1.35;
 var isPaused = true;
 var isDragging = false;
@@ -15,11 +15,13 @@ var ctx = canvas ? canvas.getContext("2d") : null;
 
 if (typeof resizeCanvas !== "function") {
   function resizeCanvas() {
-    if (!canvas) return;
+    if (!canvas || !canvas.parentElement) return;
     const rect = canvas.parentElement.getBoundingClientRect();
-    if (canvas.width !== Math.floor(rect.width) || canvas.height !== Math.floor(rect.height)) {
-      canvas.width = Math.floor(rect.width);
-      canvas.height = Math.floor(rect.height);
+    const w = Math.floor(rect.width);
+    const h = Math.floor(rect.height);
+    if (w > 0 && h > 0 && (canvas.width !== w || canvas.height !== h)) {
+      canvas.width = w;
+      canvas.height = h;
     }
   }
 }
@@ -33,7 +35,8 @@ if (typeof project3D !== "function") {
     const y2 = y * cx - z1 * sx;
     const z2 = y * sx + z1 * cx;
     const fov = 520;
-    const scale = (fov / (fov + z2)) * zoom;
+    const denom = Math.max(80, fov + z2);
+    const scale = (fov / denom) * zoom;
     return {
       x: (canvas ? canvas.width / 2 : 400) + x1 * scale,
       y: (canvas ? canvas.height / 2 : 300) + y2 * scale,
@@ -45,9 +48,10 @@ if (typeof project3D !== "function") {
 
 if (typeof draw3DSphere !== "function") {
   function draw3DSphere(x, y, r, color) {
+    if (!ctx) return;
     ctx.save();
     ctx.beginPath();
-    ctx.arc(x, y, r, 0, Math.PI * 2);
+    ctx.arc(x, y, Math.max(1, r), 0, Math.PI * 2);
     ctx.fillStyle = isXray ? "rgba(56,189,248,0.22)" : color;
     ctx.fill();
     ctx.strokeStyle = isXray ? "rgba(125,211,252,0.75)" : "rgba(15,23,42,0.35)";
@@ -59,20 +63,22 @@ if (typeof draw3DSphere !== "function") {
 
 if (typeof draw3DTube !== "function") {
   function draw3DTube(x1, y1, x2, y2, r, color) {
+    if (!ctx) return;
     ctx.save();
     ctx.beginPath();
     ctx.moveTo(x1, y1);
     ctx.lineTo(x2, y2);
     ctx.strokeStyle = isXray ? "rgba(56,189,248,0.35)" : color;
-    ctx.lineWidth = r * 2;
+    ctx.lineWidth = Math.max(1, r * 2);
     ctx.lineCap = "round";
     ctx.stroke();
     ctx.restore();
   }
 }
+
 const sectionBaseZoom = [1.35, 1.25, 1.55, 1.55, 1.35, 1.45, 2.15, 1.45];
 const sectionBaseAngles = [
-  { rx: 0.28, ry: -0.62 }, // 0: Позвоночник (вид сбоку-спереди, видны диск и нервы)
+  { rx: 0.28, ry: -0.62 }, // 0: Позвоночник
   { rx: 0.22, ry: -0.45 }, // 1: Головной мозг
   { rx: 0.18, ry: -0.35 }, // 2: Нейрон и Аксон
   { rx: 0.35, ry: -0.45 }, // 3: Сосуды мозга
@@ -109,7 +115,7 @@ function setState(idx) {
   updateUI();
 }
 
-function setView(v) {
+function setCameraView(v) {
   isPaused = true;
   updatePauseBtn();
   if (v === "front") {
@@ -122,6 +128,7 @@ function setView(v) {
     rotY = 0.0;
   }
 }
+var setView = setCameraView;
 
 function togglePause() {
   isPaused = !isPaused;
@@ -136,6 +143,27 @@ function updatePauseBtn() {
   }
 }
 
+function toggleXray() {
+  isXray = !isXray;
+  const btn = document.getElementById("xrayBtn");
+  if (btn) {
+    btn.classList.toggle("active", isXray);
+  }
+}
+
+function zoomStep(delta) {
+  zoom = Math.max(0.45, Math.min(3.5, zoom + delta));
+}
+
+function toggleFullscreen() {
+  const vp = document.getElementById("viewport") || document.documentElement;
+  if (!document.fullscreenElement) {
+    if (vp.requestFullscreen) vp.requestFullscreen().catch(() => {});
+  } else {
+    if (document.exitFullscreen) document.exitFullscreen().catch(() => {});
+  }
+}
+
 function toggleEditor() {
   const box = document.getElementById("editorBox");
   if (!box) return;
@@ -143,42 +171,84 @@ function toggleEditor() {
   box.style.display = isOpen ? "none" : "block";
   if (!isOpen) {
     const d = DB[currentLang] || DB.ru;
-    const stData = d.modules[currentMod].states[currentState];
-    document.getElementById("edTitle").value = stData.title || "";
-    document.getElementById("edDesc").value = stData.desc || "";
-    document.getElementById("edTactics").value = stData.tactics || "";
-    document.getElementById("edAuthor").value = stData.author || "";
-    document.getElementById("edWarn").style.display = "none";
+    const mod = d && d.modules && d.modules[currentMod];
+    const stData = mod && mod.states && mod.states[currentState];
+    if (stData) {
+      const elTitle = document.getElementById("edTitle");
+      const elDesc = document.getElementById("edDesc");
+      const elTactics = document.getElementById("edTactics");
+      const elAuthor = document.getElementById("edAuthor");
+      const msg = document.getElementById("guardMsg");
+      if (elTitle) elTitle.value = stData.title || "";
+      if (elDesc) elDesc.value = stData.desc || "";
+      if (elTactics) elTactics.value = stData.tactics || "";
+      if (elAuthor) elAuthor.value = stData.author || "";
+      if (msg) msg.textContent = "";
+    }
   }
 }
 
-function saveCustomData() {
-  const title = document.getElementById("edTitle").value.trim();
-  const desc = document.getElementById("edDesc").value.trim();
-  const tactics = document.getElementById("edTactics").value.trim();
-  const author = document.getElementById("edAuthor").value.trim();
+function applyEdit() {
+  const elTitle = document.getElementById("edTitle");
+  const elDesc = document.getElementById("edDesc");
+  const elTactics = document.getElementById("edTactics");
+  const elAuthor = document.getElementById("edAuthor");
+  const msg = document.getElementById("guardMsg");
+
+  const title = elTitle ? elTitle.value.trim() : "";
+  const desc = elDesc ? elDesc.value.trim() : "";
+  const tactics = elTactics ? elTactics.value.trim() : "";
+  const author = elAuthor ? elAuthor.value.trim() : "";
   const combined = (title + " " + desc + " " + tactics + " " + author).toLowerCase();
 
   const forbidden = /(http|www\.|\.ru|\.com|мг|мл|таблет|дозиров|рецепт|телефон|\+7|8\s?\(?\d{3}\)?)/i;
   if (forbidden.test(combined)) {
-    document.getElementById("edWarn").style.display = "block";
+    if (msg) {
+      msg.style.color = "#f87171";
+      msg.textContent = "⚠ Заблокировано: запрещены дозировки, рецепты, контакты и ссылки.";
+    }
     return;
   }
 
   const d = DB[currentLang] || DB.ru;
-  const stData = d.modules[currentMod].states[currentState];
-  if (title) stData.title = title;
-  if (desc) stData.desc = desc;
-  if (tactics) stData.tactics = tactics;
-  if (author) stData.author = author;
+  const stData = d && d.modules && d.modules[currentMod] && d.modules[currentMod].states[currentState];
+  if (stData) {
+    if (title) stData.title = title;
+    if (desc) stData.desc = desc;
+    if (tactics) stData.tactics = tactics;
+    if (author) stData.author = author;
+  }
 
-  document.getElementById("editorBox").style.display = "none";
+  if (msg) {
+    msg.style.color = "#34d399";
+    msg.textContent = "✓ Изменения проверены и применены.";
+  }
   updateUI();
+}
+var saveCustomData = applyEdit;
+
+function exportJSON() {
+  const d = DB[currentLang] || DB.ru;
+  const stData = d && d.modules && d.modules[currentMod] && d.modules[currentMod].states[currentState];
+  if (!stData) return;
+  const jsonStr = JSON.stringify(stData, null, 2);
+  const blob = new Blob([jsonStr], { type: "application/json" });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = `openneuroatlas_${currentLang}_m${currentMod}_s${currentState}.json`;
+  a.click();
+  URL.revokeObjectURL(url);
+}
+
+function openGithubPR() {
+  const title = encodeURIComponent("Медицинская правка: раздел " + (currentMod + 1) + ", стадия " + (currentState + 1));
+  window.open("https://github.com" + title, "_blank");
 }
 
 function updateUI() {
   const d = DB[currentLang] || DB.ru;
-  if (!d) return;
+  if (!d || !d.modules) return;
 
   const setTxt = (id, val) => {
     const el = document.getElementById(id);
@@ -194,9 +264,6 @@ function updateUI() {
   setTxt("hintText", d.hint);
   setTxt("editBtn", d.editBtn);
   setTxt("xrayBtn", d.xrayBtn);
-  setTxt("viewFrontBtn", d.vFront);
-  setTxt("viewSideBtn", d.vSide);
-  setTxt("viewTopBtn", d.vTop);
   setTxt("fsBtn", d.fsBtn);
 
   const tabsBox = document.getElementById("tabsBox");
@@ -213,7 +280,7 @@ function updateUI() {
 
   const statesBox = document.getElementById("statesBox");
   const mod = d.modules[currentMod];
-  if (statesBox && mod) {
+  if (statesBox && mod && mod.states) {
     statesBox.innerHTML = "";
     mod.states.forEach((s, i) => {
       const b = document.createElement("button");
@@ -224,16 +291,18 @@ function updateUI() {
     });
 
     const st = mod.states[currentState];
-    setTxt("statusPill", st.pill);
-    setTxt("cardTitle", st.title);
-    setTxt("cardDesc", st.desc);
-    setTxt("cardTactics", st.tactics);
-    setTxt("cardAuthor", st.author);
+    if (st) {
+      setTxt("statusPill", st.pill);
+      setTxt("cardTitle", st.title);
+      setTxt("cardDesc", st.desc);
+      setTxt("cardTactics", st.tactics);
+      setTxt("cardAuthor", st.author);
 
-    const pill = document.getElementById("statusPill");
-    if (pill) {
-      pill.style.background = currentState === 0 ? "rgba(16,185,129,0.18)" : currentState === 1 ? "rgba(245,158,11,0.2)" : "rgba(239,68,68,0.22)";
-      pill.style.color = currentState === 0 ? "#34d399" : currentState === 1 ? "#fbbf24" : "#f87171";
+      const pill = document.getElementById("statusPill");
+      if (pill) {
+        pill.style.background = currentState === 0 ? "rgba(16,185,129,0.18)" : currentState === 1 ? "rgba(245,158,11,0.2)" : "rgba(239,68,68,0.22)";
+        pill.style.color = currentState === 0 ? "#34d399" : currentState === 1 ? "#fbbf24" : "#f87171";
+      }
     }
   }
   updatePauseBtn();
@@ -258,85 +327,3 @@ function renderLoop() {
   if (!model) return;
 
   const d = DB[currentLang] || DB.ru;
-  const labelDict = (d && d.labels) || {};
-  const thickScale = 0.68;
-
-  const drawQueue = [];
-
-  (model.polys || []).forEach((poly) => {
-    const proj = poly.pts.map((p) => project3D(p[0], p[1], p[2]));
-    const avgZ = proj.reduce((acc, v) => acc + v.z, 0) / proj.length;
-    drawQueue.push({
-      z: avgZ,
-      draw: () => {
-        ctx.save();
-        ctx.beginPath();
-        proj.forEach((v, idx) => (idx === 0 ? ctx.moveTo(v.x, v.y) : ctx.lineTo(v.x, v.y)));
-        ctx.closePath();
-        ctx.fillStyle = isXray ? "rgba(56, 189, 248, 0.14)" : poly.color;
-        ctx.fill();
-        ctx.strokeStyle = isXray ? "rgba(125, 211, 252, 0.55)" : "rgba(15, 23, 42, 0.35)";
-        ctx.lineWidth = 1.2;
-        ctx.stroke();
-        ctx.restore();
-      }
-    });
-  });
-
-  (model.tubes || []).forEach((t) => {
-    const p1 = project3D(t.x1, t.y1, t.z1);
-    const p2 = project3D(t.x2, t.y2, t.z2);
-    const avgZ = (p1.z + p2.z) * 0.5;
-    drawQueue.push({
-      z: avgZ,
-      draw: () => {
-        const r = Math.max(2, t.r * zoom * thickScale);
-        draw3DTube(p1.x, p1.y, p2.x, p2.y, r, t.color);
-      }
-    });
-  });
-
-  (model.pts || []).forEach((pt) => {
-    const p = project3D(pt.x, pt.y, pt.z);
-    drawQueue.push({
-      z: p.z,
-      draw: () => {
-        const r = Math.max(2.5, pt.r * zoom * thickScale);
-        draw3DSphere(p.x, p.y, r, pt.color);
-      }
-    });
-  });
-
-  drawQueue.sort((a, b) => b.z - a.z);
-  drawQueue.forEach((item) => item.draw());
-
-  (model.labels || []).forEach((lb) => {
-    const p = project3D(lb.x, lb.y, lb.z);
-    const text = labelDict[lb.key] || lb.key;
-    ctx.save();
-    ctx.font = "600 13px system-ui, -apple-system, sans-serif";
-    const w = ctx.measureText(text).width + 16;
-    const h = 24;
-    const bx = p.x - w / 2;
-    const by = p.y - h - 8;
-
-    ctx.fillStyle = "rgba(15, 23, 42, 0.88)";
-    ctx.strokeStyle = "rgba(56, 189, 248, 0.7)";
-    ctx.lineWidth = 1;
-    ctx.beginPath();
-    ctx.roundRect(bx, by, w, h, 6);
-    ctx.fill();
-    ctx.stroke();
-
-    ctx.fillStyle = "#f8fafc";
-    ctx.textAlign = "center";
-    ctx.textBaseline = "middle";
-    ctx.fillText(text, p.x, by + h / 2);
-    ctx.restore();
-  });
-}
-
-applySectionCamera(0);
-isPaused = true;
-updateUI();
-renderLoop();
