@@ -1,19 +1,4 @@
 (function () {
-  function applyBigZoom() {
-    try {
-      if (typeof zoomStep === "function") {
-        const steps = window.innerWidth <= 768 ? 3 : 5;
-        for (let i = 0; i < steps; i++) {
-          zoomStep(0.15);
-        }
-      }
-    } catch (e) {}
-  }
-
-  window.addEventListener("load", function () {
-    setTimeout(applyBigZoom, 200);
-  });
-
   const warmNotes = {
     ru: "💛 Помните: организм человека обладает огромным запасом прочности и способностью к восстановлению. Эта 3D-модель создана, чтобы спокойно и понятно разобраться в устройстве своего тела вместе с врачом.",
     en: "💛 Remember: the human body has remarkable resilience and capacity for recovery. This 3D model helps you calmly understand how your body works together with your doctor.",
@@ -35,7 +20,8 @@
         note.style.cssText = "margin-top:12px; padding:10px 12px; background:rgba(14,165,233,0.12); border-left:3px solid #38bdf8; border-radius:6px; font-size:13px; line-height:1.55; color:#e0f2fe;";
         card.appendChild(note);
       }
-      note.textContent = warmNotes[typeof currentLang !== "undefined" ? currentLang : "ru"] || warmNotes.ru;
+      const lang = typeof currentLang !== "undefined" ? currentLang : "ru";
+      note.textContent = warmNotes[lang] || warmNotes.ru;
     } catch (e) {}
   };
 
