@@ -1,176 +1,270 @@
-function renderLoop() {
-  resizeCanvas();
-  ctx.clearRect(0, 0, canvas.width, canvas.height);
+const sectionBaseZoom = [1.35, 1.25, 1.55, 1.55, 1.35, 1.45, 2.15, 1.45];
+const sectionBaseAngles = [
+  { rx: 0.28, ry: -0.62 }, // 0: Позвоночник (вид сбоку-спереди, видны диск и нервы)
+  { rx: 0.22, ry: -0.45 }, // 1: Головной мозг
+  { rx: 0.18, ry: -0.35 }, // 2: Нейрон и Аксон
+  { rx: 0.35, ry: -0.45 }, // 3: Сосуды мозга
+  { rx: 0.28, ry: -0.62 }, // 4: Шейный отдел
+  { rx: 0.20, ry: -0.35 }, // 5: Сердце и коронары
+  { rx: 0.15, ry: -0.30 }, // 6: Вены ног и клапаны
+  { rx: 0.22, ry: -0.50 }  // 7: Коленный сустав
+];
 
-  if (!isPaused && !isDragging) {
-    rotY += 0.0045;
+function applySectionCamera(idx) {
+  const ang = sectionBaseAngles[idx] || { rx: 0.25, ry: -0.45 };
+  rotX = ang.rx;
+  rotY = ang.ry;
+  const mobileFactor = window.innerWidth <= 768 ? 0.82 : 1.0;
+  zoom = (sectionBaseZoom[idx] || 1.45) * mobileFactor;
+}
+
+function setLang(l) {
+  currentLang = l;
+  updateUI();
+}
+
+function setModule(idx) {
+  currentMod = idx;
+  currentState = 0;
+  applySectionCamera(idx);
+  isPaused = true;
+  updatePauseBtn();
+  updateUI();
+}
+
+function setState(idx) {
+  currentState = idx;
+  updateUI();
+}
+
+function setView(v) {
+  isPaused = true;
+  updatePauseBtn();
+  if (v === "front") {
+    applySectionCamera(currentMod);
+  } else if (v === "side") {
+    rotX = 0.15;
+    rotY = -1.45;
+  } else if (v === "top") {
+    rotX = 1.35;
+    rotY = 0.0;
+  }
+}
+
+function togglePause() {
+  isPaused = !isPaused;
+  updatePauseBtn();
+}
+
+function updatePauseBtn() {
+  const btn = document.getElementById("pauseBtn");
+  const d = DB[currentLang] || DB.ru;
+  if (btn && d) {
+    btn.textContent = isPaused ? (d.play || "Пуск ▶") : (d.pause || "Пауза ⏸");
+  }
+}
+
+function toggleEditor() {
+  const box = document.getElementById("editorBox");
+  if (!box) return;
+  const isOpen = box.style.display === "block";
+  box.style.display = isOpen ? "none" : "block";
+  if (!isOpen) {
+    const d = DB[currentLang] || DB.ru;
+    const stData = d.modules[currentMod].states[currentState];
+    document.getElementById("edTitle").value = stData.title || "";
+    document.getElementById("edDesc").value = stData.desc || "";
+    document.getElementById("edTactics").value = stData.tactics || "";
+    document.getElementById("edAuthor").value = stData.author || "";
+    document.getElementById("edWarn").style.display = "none";
+  }
+}
+
+function saveCustomData() {
+  const title = document.getElementById("edTitle").value.trim();
+  const desc = document.getElementById("edDesc").value.trim();
+  const tactics = document.getElementById("edTactics").value.trim();
+  const author = document.getElementById("edAuthor").value.trim();
+  const combined = (title + " " + desc + " " + tactics + " " + author).toLowerCase();
+
+  const forbidden = /(http|www\.|\.ru|\.com|мг|мл|таблет|дозиров|рецепт|телефон|\+7|8\s?\(?\d{3}\)?)/i;
+  if (forbidden.test(combined)) {
+    document.getElementById("edWarn").style.display = "block";
+    return;
   }
 
-  const builder = window.AtlasParts[currentMod];
-  if (builder) {
-    const scene = builder(currentState, currentLang);
-    const renderList = [];
+  const d = DB[currentLang] || DB.ru;
+  const stData = d.modules[currentMod].states[currentState];
+  if (title) stData.title = title;
+  if (desc) stData.desc = desc;
+  if (tactics) stData.tactics = tactics;
+  if (author) stData.author = author;
 
-    for (let i = 0; i < scene.polys.length; i++) {
-      const pl = scene.polys[i];
-      const projPts = pl.pts.map(function (p) { return project3D(p.x, p.y, p.z); });
-      const avgZ = projPts.reduce(function (s, p) { return s + p.z; }, 0) / projPts.length;
-      renderList.push({ type: "poly", z: avgZ, pts: projPts, c: pl.c, stroke: pl.stroke, isBone: pl.isBone });
-    }
-
-    for (let j = 0; j < scene.tubes.length; j++) {
-      const tb = scene.tubes[j];
-      const p1 = project3D(tb.x1, tb.y1, tb.z1);
-      const p2 = project3D(tb.x2, tb.y2, tb.z2);
-      renderList.push({ type: "tube", z: (p1.z + p2.z) * 0.5, p1: p1, p2: p2, r1: tb.r * p1.sc, r2: tb.r * p2.sc, c: tb.c, isBone: tb.isBone });
-    }
-
-    for (let k = 0; k < scene.pts.length; k++) {
-      const pt = scene.pts[k];
-      const p = project3D(pt.x, pt.y, pt.z);
-      renderList.push({ type: "pt", z: p.z, x: p.x, y: p.y, r: pt.r * p.sc, c: pt.c, isBone: pt.isBone });
-    }
-
-    renderList.sort(function (a, b) { return b.z - a.z; });
-
-    for (let n = 0; n < renderList.length; n++) {
-      const item = renderList[n];
-      if (item.type === "pt") {
-        const alpha = Math.max(0.5, Math.min(1, 1 - item.z / 550));
-        draw3DSphere(item.x, item.y, Math.max(2.5, item.r), item.c, alpha, item.isBone);
-      } else if (item.type === "tube") {
-        draw3DTube(item.p1, item.p2, Math.max(2, item.r1), Math.max(2, item.r2), item.c, item.isBone);
-      } else if (item.type === "poly") {
-        ctx.save();
-        if (isXray && item.isBone) ctx.globalAlpha = 0.18;
-        ctx.beginPath();
-        ctx.moveTo(item.pts[0].x, item.pts[0].y);
-        for (let m = 1; m < item.pts.length; m++) ctx.lineTo(item.pts[m].x, item.pts[m].y);
-        ctx.closePath();
-        const light = Math.max(0.45, Math.min(1.25, 1 - item.z / 280));
-        ctx.fillStyle = shadeColor(item.c, light);
-        ctx.fill();
-        if (item.stroke || (isXray && item.isBone)) {
-          ctx.strokeStyle = (isXray && item.isBone) ? "rgba(56, 189, 248, 0.75)" : item.stroke;
-          ctx.lineWidth = 1;
-          ctx.stroke();
-        }
-        ctx.restore();
-      }
-    }
-
-    for (let l = 0; l < scene.labels.length; l++) {
-      const lb = scene.labels[l];
-      const p = project3D(lb.x, lb.y, lb.z);
-      if (p.z < 120) {
-        ctx.save();
-        ctx.font = "600 11px Segoe UI, sans-serif";
-        const tw = ctx.measureText(lb.t).width;
-        const bx = p.x + (lb.ox || 12);
-        const by = p.y + (lb.oy || -10);
-        ctx.strokeStyle = "rgba(148, 163, 184, 0.6)";
-        ctx.beginPath();
-        ctx.moveTo(p.x, p.y);
-        ctx.lineTo(bx, by);
-        ctx.stroke();
-        ctx.fillStyle = "rgba(15, 23, 42, 0.85)";
-        ctx.fillRect(bx - 4, by - 9, tw + 8, 18);
-        ctx.fillStyle = "#f8fafc";
-        ctx.fillText(lb.t, bx, by + 4);
-        ctx.restore();
-      }
-    }
-  }
-  requestAnimationFrame(renderLoop);
+  document.getElementById("editorBox").style.display = "none";
+  updateUI();
 }
 
 function updateUI() {
   const d = DB[currentLang] || DB.ru;
-  document.getElementById("subText").textContent = d.ui.sub;
-  document.getElementById("modLabel").textContent = d.ui.modLabel;
-  document.getElementById("stateLabel").textContent = d.ui.stateLabel;
-  document.getElementById("tacticsLabel").textContent = d.ui.tacticsLabel + " ";
-  document.getElementById("authorLabel").textContent = d.ui.authorLabel;
-  document.getElementById("discText").textContent = d.ui.disc;
-  document.getElementById("hintText").textContent = d.ui.hint;
-  document.getElementById("editBtn").textContent = d.ui.editBtn;
-  updatePauseBtn();
+  if (!d) return;
+
+  const setTxt = (id, val) => {
+    const el = document.getElementById(id);
+    if (el && val !== undefined) el.textContent = val;
+  };
+
+  setTxt("subText", d.sub);
+  setTxt("modLabel", d.modLabel);
+  setTxt("stateLabel", d.stateLabel);
+  setTxt("tacticsLabel", d.tacticsLabel);
+  setTxt("authorLabel", d.authorLabel);
+  setTxt("discText", d.disc);
+  setTxt("hintText", d.hint);
+  setTxt("editBtn", d.editBtn);
+  setTxt("xrayBtn", d.xrayBtn);
+  setTxt("viewFrontBtn", d.vFront);
+  setTxt("viewSideBtn", d.vSide);
+  setTxt("viewTopBtn", d.vTop);
+  setTxt("fsBtn", d.fsBtn);
 
   const tabsBox = document.getElementById("tabsBox");
-  tabsBox.innerHTML = "";
-  d.ui.tabs.forEach(function (tabName, idx) {
-    const b = document.createElement("button");
-    b.className = "tab-btn" + (idx === currentMod ? " active" : "");
-    b.textContent = tabName;
-    b.onclick = function () { currentMod = idx; currentState = 0; updateUI(); };
-    tabsBox.appendChild(b);
-  });
-
-  const mod = d.modules[currentMod];
-  const statesBox = document.getElementById("statesBox");
-  statesBox.innerHTML = "";
-  mod.buttons.forEach(function (btnLabel, idx) {
-    const b = document.createElement("button");
-    b.className = "state-btn" + (idx === currentState ? " active" : "");
-    b.textContent = btnLabel;
-    b.onclick = function () { currentState = idx; updateUI(); };
-    statesBox.appendChild(b);
-  });
-
-  const st = mod.states[currentState];
-  const pill = document.getElementById("statusPill");
-  pill.textContent = st.pill;
-  pill.style.background = st.color + "22";
-  pill.style.color = st.color;
-  pill.style.borderColor = st.color;
-  document.getElementById("cardTitle").textContent = st.title;
-  document.getElementById("cardDesc").textContent = st.desc;
-  document.getElementById("cardTactics").textContent = st.tactics;
-  document.getElementById("cardAuthor").textContent = st.author;
-}
-
-function setLang(l) { currentLang = l; updateUI(); }
-function togglePause() { isPaused = !isPaused; updatePauseBtn(); }
-function updatePauseBtn() {
-  const btn = document.getElementById("pauseBtn");
-  if (btn) btn.textContent = isPaused ? "Пуск ▶" : "Пауза ⏸";
-}
-function toggleFullscreen() {
-  if (!document.fullscreenElement) document.documentElement.requestFullscreen();
-  else document.exitFullscreen();
-}
-function toggleEditor() {
-  const box = document.getElementById("editorBox");
-  box.style.display = box.style.display === "block" ? "none" : "block";
-}
-function applyEdit() {
-  const raw = document.getElementById("edDesc").value + " " + document.getElementById("edTactics").value;
-  const bad = /(мг|мл|таблет|капсул|укол|инъекц|дозировк|купить|заказать|скидк|http|www\.|\+7)/i;
-  const msg = document.getElementById("guardMsg");
-  if (bad.test(raw)) {
-    msg.style.color = "#ef4444";
-    msg.textContent = "⛔ Заблокировано фильтром безопасности (дозировки, рецепты или ссылки запрещены).";
-    return;
+  if (tabsBox) {
+    tabsBox.innerHTML = "";
+    d.modules.forEach((m, i) => {
+      const b = document.createElement("button");
+      b.className = "tab-btn" + (i === currentMod ? " active" : "");
+      b.textContent = m.name;
+      b.onclick = () => setModule(i);
+      tabsBox.appendChild(b);
+    });
   }
-  const st = DB[currentLang].modules[currentMod].states[currentState];
-  if (document.getElementById("edAuthor").value) st.author = document.getElementById("edAuthor").value;
-  if (document.getElementById("edTitle").value) st.title = document.getElementById("edTitle").value;
-  if (document.getElementById("edDesc").value) st.desc = document.getElementById("edDesc").value;
-  if (document.getElementById("edTactics").value) st.tactics = document.getElementById("edTactics").value;
-  msg.style.color = "#10b981";
-  msg.textContent = "✅ Изменения проверены и применены локально.";
-  updateUI();
-}
-function exportJSON() {
-  const blob = new Blob([JSON.stringify(DB, null, 2)], { type: "application/json" });
-  const a = document.createElement("a");
-  a.href = URL.createObjectURL(blob);
-  a.download = "openneuroatlas_data.json";
-  a.click();
-}
-function openGithubPR() {
-  window.open("https://github.com", "_blank");
+
+  const statesBox = document.getElementById("statesBox");
+  const mod = d.modules[currentMod];
+  if (statesBox && mod) {
+    statesBox.innerHTML = "";
+    mod.states.forEach((s, i) => {
+      const b = document.createElement("button");
+      b.className = "state-btn" + (i === currentState ? " active" : "");
+      b.textContent = s.btn;
+      b.onclick = () => setState(i);
+      statesBox.appendChild(b);
+    });
+
+    const st = mod.states[currentState];
+    setTxt("statusPill", st.pill);
+    setTxt("cardTitle", st.title);
+    setTxt("cardDesc", st.desc);
+    setTxt("cardTactics", st.tactics);
+    setTxt("cardAuthor", st.author);
+
+    const pill = document.getElementById("statusPill");
+    if (pill) {
+      pill.style.background = currentState === 0 ? "rgba(16,185,129,0.18)" : currentState === 1 ? "rgba(245,158,11,0.2)" : "rgba(239,68,68,0.22)";
+      pill.style.color = currentState === 0 ? "#34d399" : currentState === 1 ? "#fbbf24" : "#f87171";
+    }
+  }
+  updatePauseBtn();
 }
 
+function renderLoop() {
+  requestAnimationFrame(renderLoop);
+  if (typeof resizeCanvas === "function") resizeCanvas();
+  if (!ctx || !canvas) return;
+
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+  if (!isPaused && !isDragging) {
+    rotY += 0.006;
+  }
+  timeTick += 0.03;
+
+  const builder = window.AtlasParts && window.AtlasParts[currentMod];
+  if (!builder) return;
+
+  const model = builder(currentState, timeTick);
+  if (!model) return;
+
+  const d = DB[currentLang] || DB.ru;
+  const labelDict = (d && d.labels) || {};
+  const thickScale = 0.68;
+
+  const drawQueue = [];
+
+  (model.polys || []).forEach((poly) => {
+    const proj = poly.pts.map((p) => project3D(p[0], p[1], p[2]));
+    const avgZ = proj.reduce((acc, v) => acc + v.z, 0) / proj.length;
+    drawQueue.push({
+      z: avgZ,
+      draw: () => {
+        ctx.save();
+        ctx.beginPath();
+        proj.forEach((v, idx) => (idx === 0 ? ctx.moveTo(v.x, v.y) : ctx.lineTo(v.x, v.y)));
+        ctx.closePath();
+        ctx.fillStyle = isXray ? "rgba(56, 189, 248, 0.14)" : poly.color;
+        ctx.fill();
+        ctx.strokeStyle = isXray ? "rgba(125, 211, 252, 0.55)" : "rgba(15, 23, 42, 0.35)";
+        ctx.lineWidth = 1.2;
+        ctx.stroke();
+        ctx.restore();
+      }
+    });
+  });
+
+  (model.tubes || []).forEach((t) => {
+    const p1 = project3D(t.x1, t.y1, t.z1);
+    const p2 = project3D(t.x2, t.y2, t.z2);
+    const avgZ = (p1.z + p2.z) * 0.5;
+    drawQueue.push({
+      z: avgZ,
+      draw: () => {
+        const r = Math.max(2, t.r * zoom * thickScale);
+        draw3DTube(p1.x, p1.y, p2.x, p2.y, r, t.color);
+      }
+    });
+  });
+
+  (model.pts || []).forEach((pt) => {
+    const p = project3D(pt.x, pt.y, pt.z);
+    drawQueue.push({
+      z: p.z,
+      draw: () => {
+        const r = Math.max(2.5, pt.r * zoom * thickScale);
+        draw3DSphere(p.x, p.y, r, pt.color);
+      }
+    });
+  });
+
+  drawQueue.sort((a, b) => b.z - a.z);
+  drawQueue.forEach((item) => item.draw());
+
+  (model.labels || []).forEach((lb) => {
+    const p = project3D(lb.x, lb.y, lb.z);
+    const text = labelDict[lb.key] || lb.key;
+    ctx.save();
+    ctx.font = "600 13px system-ui, -apple-system, sans-serif";
+    const w = ctx.measureText(text).width + 16;
+    const h = 24;
+    const bx = p.x - w / 2;
+    const by = p.y - h - 8;
+
+    ctx.fillStyle = "rgba(15, 23, 42, 0.88)";
+    ctx.strokeStyle = "rgba(56, 189, 248, 0.7)";
+    ctx.lineWidth = 1;
+    ctx.beginPath();
+    ctx.roundRect(bx, by, w, h, 6);
+    ctx.fill();
+    ctx.stroke();
+
+    ctx.fillStyle = "#f8fafc";
+    ctx.textAlign = "center";
+    ctx.textBaseline = "middle";
+    ctx.fillText(text, p.x, by + h / 2);
+    ctx.restore();
+  });
+}
+
+applySectionCamera(0);
+isPaused = true;
 updateUI();
 renderLoop();
