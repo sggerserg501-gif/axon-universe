@@ -35,8 +35,9 @@ function project3D(x, y, z) {
   const y2 = y * cx - z1 * sx;
   const z2 = y * sx + z1 * cx;
 
-  const fov = 560;
-  const sc = (fov / (fov + z2 + 260)) * zoom;
+const fov = 720;
+const sc = (fov / (fov + z2 + 80)) * zoom * 1.45;
+
   return {
     x: canvas.width * 0.5 + x1 * sc,
     y: canvas.height * 0.5 + y2 * sc,
