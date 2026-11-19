@@ -1,7 +1,7 @@
 (function () {
   // ===== Камера для каждого из 10 разделов =====
   const sectionBaseZoom = [1.35, 1.25, 1.55, 1.55, 1.35, 1.45, 2.15, 1.45, 1.45, 1.40];
-  const sectionBaseAngles = [F
+  const sectionBaseAngles = [
     { rx: 0.28, ry: -0.62 }, { rx: 0.22, ry: -0.45 },
     { rx: 0.18, ry: -0.35 }, { rx: 0.35, ry: -0.45 },
     { rx: 0.28, ry: -0.62 }, { rx: 0.20, ry: -0.35 },
