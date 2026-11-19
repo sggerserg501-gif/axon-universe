@@ -131,7 +131,6 @@
     const author = (document.getElementById("edAuthor") || {}).value || "";
     const msg = document.getElementById("guardMsg");
     if (/(http|www\.|\.ru|\.com|мг|мл|таблет|дозиров|рецепт|телефон)/i.test(title + desc + tactics + author)) {
-
  if (msg) { msg.style.color = "#f87171"; msg.textContent = "Заблокировано: дозировки, рецепты и ссылки."; }
       return;
     }
