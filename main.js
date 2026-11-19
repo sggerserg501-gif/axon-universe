@@ -130,9 +130,9 @@
     const tactics = (document.getElementById("edTactics") || {}).value || "";
     const author = (document.getElementById("edAuthor") || {}).value || "";
     const msg = document.getElementById("guardMsg");
-    if (/(http|www\.|\.ru|\.com|мг|мл|таблет|дозиров|рецепт|телефон|8\s?$?\d{3}$?
-)/i.test(title + desc + tactics + author)) {
-      if (msg) { msg.style.color = "#f87171"; msg.textContent = "Заблокировано: дозировки, рецепты и ссылки."; }
+    if (/(http|www\.|\.ru|\.com|мг|мл|таблет|дозиров|рецепт|телефон)/i.test(title + desc + tactics + author)) {
+
+ if (msg) { msg.style.color = "#f87171"; msg.textContent = "Заблокировано: дозировки, рецепты и ссылки."; }
       return;
     }
     const d = DB[currentLang] || DB.ru;
