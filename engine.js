@@ -6,19 +6,23 @@ window.AtlasEngine = (function () {
   let zoom = 9.2, targetZoom = 9.2, isDragging = false, prevX = 0, prevY = 0;
 
   window.AtlasBuilders = window.AtlasBuilders || {};
-
   function loadThreeJS(cb) {
     if (window.THREE) return cb();
-    const s = document.createElement('script');
-    s.src = 'three.min.js';
-    s.onload = cb;
-    s.onerror = () => {
-      const fb = document.createElement('script');
-      fb.src = ['https:/', 'unpkg.com', 'three@0.128.0', 'build', 'three.min.js'].join('/');
-      fb.onload = cb;
-      document.head.appendChild(fb);
-    };
-    document.head.appendChild(s);
+    const sources = [
+      'three.min.js',
+      ['https:/', 'cdn.jsdelivr.net', 'npm', 'three@0.128.0', 'build', 'three.min.js'].join('/'),
+      ['https:/', 'cdn.bootcdn.net', 'ajax', 'libs', 'three.js', 'r128', 'three.min.js'].join('/')
+    ];
+    let idx = 0;
+    function tryNext() {
+      if (idx >= sources.length) return;
+      const s = document.createElement('script');
+      s.src = sources[idx++];
+      s.onload = cb;
+      s.onerror = tryNext;
+      document.head.appendChild(s);
+    }
+    tryNext();
   }
 
   function matTissue(type, color) {
