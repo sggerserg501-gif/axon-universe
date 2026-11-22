@@ -36,7 +36,7 @@ window.ANAT_LABELS = {
     { pos: [0, 1.35, 0], ru: "Бедренная кость", en: "Femur", es: "Fémur", de: "Oberschenkelknochen", zh: "股骨" },
     { pos: [0.85, 0, 0.3], ru: "Мениск", en: "Meniscus", es: "Menisco", de: "Meniskus", zh: "半月板" },
     { pos: [0, 0, 0.15], ru: "Передняя крестообразная связка", en: "Anterior Cruciate Ligament", es: "Ligamento cruzado anterior", de: "Vorderes Kreuzband", zh: "前交叉韧带" }
-  ]
+  ],
     8: [
     { pos: [0, 0, 1.05], ru: 'Хрусталик глаза', en: 'Crystalline Lens', es: 'Cristalino', de: 'Augenlinse', zh: '晶状体' },
     { pos: [0, 0, -0.5], ru: 'Сетчатка', en: 'Retina', es: 'Retina', de: 'Netzhaut', zh: '视网膜' },
