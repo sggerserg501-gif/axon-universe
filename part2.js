@@ -1,81 +1,19 @@
-function shadeColor(hex, factor) {
-  if (!hex || !hex.startsWith("#")) return hex;
-  let r = parseInt(hex.slice(1, 3), 16);
-  let g = parseInt(hex.slice(3, 5), 16);
-  let b = parseInt(hex.slice(5, 7), 16);
-  r = Math.min(255, Math.max(0, Math.round(r * factor)));
-  g = Math.min(255, Math.max(0, Math.round(g * factor)));
-  b = Math.min(255, Math.max(0, Math.round(b * factor)));
-  return "rgb(" + r + "," + g + "," + b + ")";
-}
+window.AtlasScenes = window.AtlasScenes || {};
 
-function draw3DSphere(x, y, r, color, depthAlpha, isBone) {
-  ctx.save();
-  ctx.globalAlpha = (isXray && isBone) ? 0.20 : depthAlpha;
-  const isGlow = color === "#ef4444" || color === "#f59e0b" || color === "#fef08a" || color === "#facc15";
-  if (isGlow) {
-    ctx.shadowColor = color;
-    ctx.shadowBlur = Math.min(20, r * 1.2);
+window.AtlasScenes.drawSpine = function ({ ctx, R, cx, cy, scale, t, stage, stColor }, neck) {
+  const pulse = 1 + Math.sin(t * 4) * 0.12, ys = neck ? [-1.1, 0, 1.1] : [-0.85, 0.85];
+  R.tube(ctx, [[0, -1.8, -0.95], [0, 1.8, -0.95]], 0.24, '#facc15', cx, cy, scale);
+  ys.forEach((y, i) => {
+    R.sphere(ctx, 0, y, 0, 0.92, '#cbd5e1', false, cx, cy, scale, 0.92);
+    R.sphere(ctx, 0, y - 0.1, -1.35, 0.35, '#94a3b8', false, cx, cy, scale, 0.85);
+    if (i < ys.length - 1) R.sphere(ctx, 0, (y + ys.at(i + 1)) / 2, 0, 0.82, '#0284c7', false, cx, cy, scale, 0.88);
+  });
+  if (neck) {
+    R.tube(ctx, [[-1.15, -1.8, -0.6], [-1.15, 1.8, -0.6]], 0.14, '#ef4444', cx, cy, scale);
+    R.tube(ctx, [[1.15, -1.8, -0.6], [1.15, 1.8, -0.6]], stage === 1 ? 0.06 : 0.14, '#ef4444', cx, cy, scale);
   }
-  if (color.startsWith("rgba")) {
-    ctx.beginPath();
-    ctx.arc(x, y, r, 0, Math.PI * 2);
-    ctx.fillStyle = color;
-    ctx.fill();
-    ctx.restore();
-    return;
-  }
-  const grad = ctx.createRadialGradient(x - r * 0.35, y - r * 0.35, r * 0.05, x, y, r);
-  grad.addColorStop(0, "#ffffff");
-  grad.addColorStop(0.25, color);
-  grad.addColorStop(0.8, shadeColor(color, 0.65));
-  grad.addColorStop(1, "#060911");
+  if (stage > 0) R.sphere(ctx, 0.15, 0, -0.82, (stage === 1 ? 0.35 : 0.58) * pulse, stColor, true, cx, cy, scale);
+};
 
-  ctx.beginPath();
-  ctx.arc(x, y, r, 0, Math.PI * 2);
-  ctx.fillStyle = grad;
-  ctx.fill();
-  if (isXray && isBone) {
-    ctx.strokeStyle = "rgba(56, 189, 248, 0.65)";
-    ctx.lineWidth = 1;
-    ctx.stroke();
-  }
-  ctx.restore();
-}
-
-function draw3DTube(p1, p2, r1, r2, color, isBone) {
-  ctx.save();
-  if (isXray && isBone) ctx.globalAlpha = 0.22;
-  ctx.lineCap = "round";
-  const avgR = (r1 + r2) * 0.5;
-  ctx.beginPath();
-  ctx.moveTo(p1.x, p1.y);
-  ctx.lineTo(p2.x, p2.y);
-  ctx.strokeStyle = shadeColor(color, 0.45);
-  ctx.lineWidth = avgR * 2.1;
-  ctx.stroke();
-
-  ctx.beginPath();
-  ctx.moveTo(p1.x, p1.y);
-  ctx.lineTo(p2.x, p2.y);
-  ctx.strokeStyle = color;
-  ctx.lineWidth = avgR * 1.5;
-  ctx.stroke();
-
-  ctx.beginPath();
-  ctx.moveTo(p1.x - avgR * 0.25, p1.y - avgR * 0.25);
-  ctx.lineTo(p2.x - avgR * 0.25, p2.y - avgR * 0.25);
-  ctx.strokeStyle = "rgba(255,255,255,0.45)";
-  ctx.lineWidth = Math.max(1.5, avgR * 0.45);
-  ctx.stroke();
-  ctx.restore();
-}
-
-function toggleXray() {
-  isXray = !isXray;
-  const btn = document.getElementById("xrayBtn");
-  if (btn) {
-    btn.style.background = isXray ? "#0284c7" : "";
-    btn.style.borderColor = isXray ? "#38bdf8" : "";
-  }
-}
+window.AtlasScenes['0'] = (c) => window.AtlasScenes.drawSpine(c, false);
+window.AtlasScenes['4'] = (c) => window.AtlasScenes.drawSpine(c, true);
