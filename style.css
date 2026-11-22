@@ -1,12 +1,12 @@
 :root {
-  --bg-main: #0b0f17;
-  --bg-panel: rgba(17, 24, 39, 0.82);
-  --bg-card: #131b2b;
-  --border-color: rgba(148, 163, 184, 0.16);
-  --text-primary: #f1f5f9;
-  --text-secondary: #94a3b8;
-  --accent-primary: #0ea5e9;
-  --accent-glow: rgba(14, 165, 233, 0.25);
+  --bg-main: #0c192c;
+  --bg-panel: rgba(18, 36, 62, 0.88);
+  --bg-card: #162b4a;
+  --border-color: rgba(56, 189, 248, 0.25);
+  --text-primary: #f8fafc;
+  --text-secondary: #cbd5e1;
+  --accent-primary: #38bdf8;
+  --accent-glow: rgba(56, 189, 248, 0.28);
 }
 
 * {
@@ -17,7 +17,7 @@
 
 body {
   font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-  background-color: var(--bg-main);
+  background: radial-gradient(circle at 50% 45%, #19355c 0%, #0c192c 68%, #08111f 100%);
   color: var(--text-primary);
   height: 100vh;
   display: flex;
@@ -29,8 +29,8 @@ body {
 .topbar {
   height: 64px;
   padding: 0 24px;
-  background: #0f1623;
-  border-bottom: 1px solid var(--border-color);
+ background: #10223d;
+ border-bottom: 1px solid var(--border-color);
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -134,7 +134,7 @@ body {
 
 /* Левая панель */
 .sidebar {
-  background: #0d131f;
+  background: #0e1e36;
   border-right: 1px solid var(--border-color);
   padding: 16px;
   overflow-y: auto;
@@ -184,8 +184,8 @@ body {
 /* 3D Вьюпорт */
 .viewport-container {
   position: relative;
-  background: radial-gradient(circle at center, #162033 0%, #090d14 100%);
-  overflow: hidden;
+  background: radial-gradient(circle at center, #1e4273 0%, #0e203b 70%, #091529 100%);
+ overflow: hidden;
 }
 
 #canvas-3d {
@@ -299,7 +299,7 @@ body {
 
 /* Правая панель */
 .info-panel {
-  background: #0d131f;
+  background: #0e1e36;
   border-left: 1px solid var(--border-color);
   padding: 20px;
   display: flex;
