@@ -37,4 +37,25 @@ window.ANAT_LABELS = {
     { pos: [0.85, 0, 0.3], ru: "Мениск", en: "Meniscus", es: "Menisco", de: "Meniskus", zh: "半月板" },
     { pos: [0, 0, 0.15], ru: "Передняя крестообразная связка", en: "Anterior Cruciate Ligament", es: "Ligamento cruzado anterior", de: "Vorderes Kreuzband", zh: "前交叉韧带" }
   ]
+    8: [
+    { pos: [0, 0, 1.05], ru: 'Хрусталик глаза', en: 'Crystalline Lens', es: 'Cristalino', de: 'Augenlinse', zh: '晶状体' },
+    { pos: [0, 0, -0.5], ru: 'Сетчатка', en: 'Retina', es: 'Retina', de: 'Netzhaut', zh: '视网膜' },
+    { pos: [-0.45, -0.25, -2.0], ru: 'Зрительный нерв', en: 'Optic Nerve', es: 'Nervio óptico', de: 'Sehnerv', zh: '视神经' }
+  ],
+  9: [
+    { pos: [0.35, 0.45, 0], ru: 'Паренхима почки', en: 'Renal Parenchyma', es: 'Parénquima renal', de: 'Nierenparenchym', zh: '肾实质' },
+    { pos: [-0.35, 0, 0], ru: 'Почечная лоханка', en: 'Renal Pelvis', es: 'Pelvis renal', de: 'Nierenbecken', zh: '肾盂' },
+    { pos: [-0.6, -1.5, 0], ru: 'Мочеточник', en: 'Ureter', es: 'Uréter', de: 'Harnleiter', zh: '输尿管' }
+  ],
+  10: [
+    { pos: [-0.4, 0.35, 0], ru: 'Правая доля печени', en: 'Right Liver Lobe', es: 'Lóbulo hepático derecho', de: 'Rechter Leberlappen', zh: '肝右叶' },
+    { pos: [-0.35, -0.68, 0.25], ru: 'Желчный пузырь', en: 'Gallbladder', es: 'Vesícula biliar', de: 'Gallenblase', zh: '胆囊' },
+    { pos: [-0.15, -1.35, 0.1], ru: 'Желчный проток', en: 'Bile Duct', es: 'Conducto biliar', de: 'Gallengang', zh: '胆总管' }
+  ],
+  11: [
+    { pos: [-0.45, 1.55, 0], ru: 'Пищевод и кардия', en: 'Esophagus & Cardia', es: 'Esófago y cardias', de: 'Speiseröhre', zh: '食管与贲门' },
+    { pos: [0.35, 0.15, 0], ru: 'Тело желудка', en: 'Body of Stomach', es: 'Cuerpo del estómago', de: 'Magenkörper', zh: '胃体' },
+    { pos: [-1.35, -0.45, 0.1], ru: '12-перстная кишка', en: 'Duodenum', es: 'Duodeno', de: 'Zwölffingerdarm', zh: '十二指肠' }
+  ]
+
 };
