@@ -1,153 +1,184 @@
 window.AtlasEngine = (function () {
-  let scene, camera, renderer, rootGroup;
-  let isXray = false, isPaused = false, currentModule = 0;
-  let animatedObjects = [], translucentMaterials = [];
-  let rotX = 0.22, rotY = -0.4, targetRotX = 0.22, targetRotY = -0.4;
-  let zoom = 9.2, targetZoom = 9.2, isDragging = false, prevX = 0, prevY = 0;
+  let canvas, ctx, isXray = false, isPaused = false, currentModule = 0, currentStage = 0;
+  let rotX = 0.25, rotY = -0.45, targetRotX = 0.25, targetRotY = -0.45;
+  let zoom = 1.0, targetZoom = 1.0, isDragging = false, prevX = 0, prevY = 0;
 
-  window.AtlasBuilders = window.AtlasBuilders || {};
-  function loadThreeJS(cb) {
-    if (window.THREE) return cb();
-    const sources = [
-      'three.min.js',
-      ['https:/', 'cdn.jsdelivr.net', 'npm', 'three@0.128.0', 'build', 'three.min.js'].join('/'),
-      ['https:/', 'cdn.bootcdn.net', 'ajax', 'libs', 'three.js', 'r128', 'three.min.js'].join('/')
-    ];
-    let idx = 0;
-    function tryNext() {
-      if (idx >= sources.length) return;
-      const s = document.createElement('script');
-      s.src = sources[idx++];
-      s.onload = cb;
-      s.onerror = tryNext;
-      document.head.appendChild(s);
-    }
-    tryNext();
+  window.AtlasScenes = window.AtlasScenes || {};
+
+  function project(x, y, z, cx, cy, scale) {
+    const cosY = Math.cos(rotY), sinY = Math.sin(rotY);
+    const x1 = x * cosY - z * sinY, z1 = z * cosY + x * sinY;
+    const cosX = Math.cos(rotX), sinX = Math.sin(rotX);
+    const y2 = y * cosX - z1 * sinX, z2 = z1 * cosX + y * sinX;
+    const fov = 5.5 / (5.5 + z2);
+    return { sx: cx + x1 * scale * fov, sy: cy - y2 * scale * fov, fov };
   }
 
-  function matTissue(type, color) {
-    if (type === 'bone') {
-      const m = new THREE.MeshPhysicalMaterial({ color: 0xe2e8f0, roughness: 0.42, clearcoat: 0.25, transparent: true, opacity: isXray ? 0.2 : 0.96 });
-      translucentMaterials.push({ mat: m, normal: 0.96, xray: 0.2 });
-      return m;
+  function sphere(x, y, z, r, color, glow, cx, cy, scale, alpha) {
+    const a = alpha === undefined ? 1 : alpha;
+    const p = project(x, y, z, cx, cy, scale);
+    const rad = Math.max(2, r * scale * p.fov);
+    ctx.save();
+    ctx.globalAlpha = isXray ? a * 0.35 : a;
+    const g = ctx.createRadialGradient(p.sx - rad * 0.32, p.sy - rad * 0.32, rad * 0.08, p.sx, p.sy, rad);
+    g.addColorStop(0, '#ffffff'); g.addColorStop(0.28, color); g.addColorStop(1, '#090d16');
+    if (glow) { ctx.shadowColor = color; ctx.shadowBlur = 18; }
+    ctx.fillStyle = g; ctx.beginPath(); ctx.arc(p.sx, p.sy, rad, 0, Math.PI * 2); ctx.fill();
+    ctx.restore();
+  }
+
+  function tube(pts, radius, color, cx, cy, scale, alpha) {
+    const a = alpha === undefined ? 1 : alpha;
+    ctx.save();
+    ctx.globalAlpha = isXray ? a * 0.45 : a;
+    ctx.strokeStyle = color; ctx.lineCap = 'round'; ctx.lineJoin = 'round';
+    for (let i = 0; i < pts.length - 1; i++) {
+      const a1 = pts.at(i), a2 = pts.at(i + 1);
+      const p1 = project(a1.at(0), a1.at(1), a1.at(2), cx, cy, scale);
+      const p2 = project(a2.at(0), a2.at(1), a2.at(2), cx, cy, scale);
+      ctx.lineWidth = Math.max(2, radius * scale * ((p1.fov + p2.fov) / 2));
+      ctx.beginPath(); ctx.moveTo(p1.sx, p1.sy); ctx.lineTo(p2.sx, p2.sy); ctx.stroke();
     }
-    if (type === 'glass') {
-      const m = new THREE.MeshPhysicalMaterial({ color: color || 0x94a3b8, roughness: 0.25, clearcoat: 0.4, transparent: true, opacity: isXray ? 0.14 : 0.42 });
-      translucentMaterials.push({ mat: m, normal: 0.42, xray: 0.14 });
-      return m;
-    }
-    if (type === 'cartilage') return new THREE.MeshPhysicalMaterial({ color: 0x0284c7, roughness: 0.25, clearcoat: 0.65, transparent: true, opacity: 0.9 });
-    if (type === 'nerve') return new THREE.MeshStandardMaterial({ color: 0xfacc15, emissive: 0x854d0e, emissiveIntensity: 0.35, roughness: 0.35 });
-    if (type === 'artery') return new THREE.MeshPhysicalMaterial({ color: 0xdc2626, emissive: 0x7f1d1d, emissiveIntensity: 0.25, roughness: 0.22, clearcoat: 0.6 });
-    if (type === 'vein') return new THREE.MeshPhysicalMaterial({ color: 0x2563eb, emissive: 0x1e3a8a, emissiveIntensity: 0.2, roughness: 0.25, transparent: true, opacity: 0.45, side: THREE.DoubleSide });
-    if (type === 'lesion') return new THREE.MeshStandardMaterial({ color: color, emissive: color, emissiveIntensity: 0.6, roughness: 0.28 });
+    ctx.restore();
   }
 
   function init(containerId, onReady) {
-    loadThreeJS(() => {
-      const box = document.getElementById(containerId);
-      scene = new THREE.Scene();
-      scene.fog = new THREE.FogExp2(0x090d14, 0.028);
-      camera = new THREE.PerspectiveCamera(40, box.clientWidth / box.clientHeight, 0.1, 100);
-      camera.position.set(0, 1.4, zoom);
+    const box = document.getElementById(containerId);
+    canvas = document.createElement('canvas');
+    box.innerHTML = ''; box.appendChild(canvas);
+    ctx = canvas.getContext('2d');
 
-      renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
-      renderer.setSize(box.clientWidth, box.clientHeight);
-      renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
-      renderer.toneMapping = THREE.ACESFilmicToneMapping;
-      box.innerHTML = '';
-      box.appendChild(renderer.domElement);
+    const resize = () => {
+      const dpr = Math.min(window.devicePixelRatio || 1, 2);
+      canvas.width = box.clientWidth * dpr; canvas.height = box.clientHeight * dpr;
+      canvas.style.width = box.clientWidth + 'px'; canvas.style.height = box.clientHeight + 'px';
+      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    };
+    resize(); window.addEventListener('resize', resize);
 
-      scene.add(new THREE.AmbientLight(0xdbeafe, 0.55));
-      const key = new THREE.DirectionalLight(0xffffff, 1.15); key.position.set(6, 10, 8); scene.add(key);
-      const rim = new THREE.DirectionalLight(0x38bdf8, 0.85); rim.position.set(-7, 5, -7); scene.add(rim);
-
-      const grid = new THREE.GridHelper(14, 28, 0x1e293b, 0x0f172a);
-      grid.position.y = -3.3;
-      scene.add(grid);
-
-      rootGroup = new THREE.Group();
-      scene.add(rootGroup);
-
-      const dom = renderer.domElement;
-      dom.addEventListener('pointerdown', (e) => { isDragging = true; prevX = e.clientX; prevY = e.clientY; });
-      window.addEventListener('pointerup', () => (isDragging = false));
-      window.addEventListener('pointermove', (e) => {
-        if (!isDragging) return;
-        targetRotY += (e.clientX - prevX) * 0.008;
-        targetRotX = Math.max(-1.25, Math.min(1.25, targetRotX + (e.clientY - prevY) * 0.008));
-        prevX = e.clientX; prevY = e.clientY;
-      });
-      dom.addEventListener('wheel', (e) => { e.preventDefault(); targetZoom = Math.max(4.5, Math.min(16, targetZoom + e.deltaY * 0.005)); }, { passive: false });
-      window.addEventListener('resize', () => {
-        camera.aspect = box.clientWidth / box.clientHeight;
-        camera.updateProjectionMatrix();
-        renderer.setSize(box.clientWidth, box.clientHeight);
-      });
-
-      animate();
-      if (onReady) onReady();
+    canvas.addEventListener('pointerdown', (e) => { isDragging = true; prevX = e.clientX; prevY = e.clientY; });
+    window.addEventListener('pointerup', () => (isDragging = false));
+    window.addEventListener('pointermove', (e) => {
+      if (!isDragging) return;
+      targetRotY += (e.clientX - prevX) * 0.01;
+      targetRotX = Math.max(-1.2, Math.min(1.2, targetRotX + (e.clientY - prevY) * 0.01));
+      prevX = e.clientX; prevY = e.clientY;
     });
+    canvas.addEventListener('wheel', (e) => { e.preventDefault(); targetZoom = Math.max(0.55, Math.min(1.8, targetZoom - e.deltaY * 0.001)); }, { passive: false });
+    requestAnimationFrame(loop);
+    if (onReady) onReady();
   }
 
-  function buildScene(modIdx, stageIdx) {
-    currentModule = modIdx;
-    if (!rootGroup) return;
-    while (rootGroup.children.length > 0) rootGroup.remove(rootGroup.children);
-    animatedObjects = [];
-    translucentMaterials = [];
-    const stageColor = stageIdx === 0 ? 0x38bdf8 : stageIdx === 1 ? 0xf59e0b : 0xef4444;
-    const builder = window.AtlasBuilders[modIdx];
-    if (builder) builder({ root: rootGroup, stage: stageIdx, color: stageColor, mat: matTissue, anim: animatedObjects });
-  }
+  function loop() {
+    requestAnimationFrame(loop);
+    if (!ctx || !canvas) return;
+    rotX += (targetRotX - rotX) * 0.12; rotY += (targetRotY - rotY) * 0.12; zoom += (targetZoom - zoom) * 0.12;
+    if (!isDragging && !isPaused) targetRotY += 0.006;
 
-  function animate() {
-    requestAnimationFrame(animate);
-    if (!renderer) return;
-    rotX += (targetRotX - rotX) * 0.1; rotY += (targetRotY - rotY) * 0.1; zoom += (targetZoom - zoom) * 0.1;
-    if (rootGroup) {
-      rootGroup.rotation.x = rotX; rootGroup.rotation.y = rotY;
-      if (!isDragging && !isPaused) targetRotY += 0.0022;
-    }
-    camera.position.z = zoom;
-
-    if (!isPaused) {
-      const t = performance.now() * 0.003;
-      animatedObjects.forEach((o) => {
-        if (o.type === 'pulse') { const s = 1 + Math.sin(t * 2.2) * 0.12; o.mesh.scale.set(s, s, s); }
-        if (o.type === 'heartbeat') { const b = 1 + Math.pow(Math.sin(t * 2.5), 4) * 0.08; o.mesh.scale.set(b, b, b); }
-        if (o.type === 'impulse') { o.mesh.position.x = -2.4 + ((t * 0.7) % 1) * (o.limit + 2.4); }
-        if (o.type === 'bloodflow') {
-          o.mesh.position.y += o.reverse ? -0.025 : 0.025;
-          if (o.mesh.position.y > 2.1) o.mesh.position.y = -2.1;
-          if (o.mesh.position.y < -2.1) o.mesh.position.y = 2.1;
-        }
-      });
-    }
+    const w = canvas.clientWidth, h = canvas.clientHeight;
+    ctx.clearRect(0, 0, w, h);
+    const cx = w / 2, cy = h / 2, scale = Math.min(w, h) * 0.22 * zoom, t = performance.now() * 0.001;
+    const stColor = currentStage === 0 ? '#38bdf8' : currentStage === 1 ? '#f59e0b' : '#ef4444';
+    const drawFn = window.AtlasScenes[String(currentModule)];
+    if (drawFn) drawFn({ sphere, tube, cx, cy, scale, t, stage: currentStage, stColor });
 
     const layer = document.getElementById('labels-layer');
-    if (layer && window.ANAT_LABELS && rootGroup) {
+    if (layer && window.ANAT_LABELS) {
       const pins = layer.querySelectorAll('.anat-pin');
-      const items = window.ANAT_LABELS[currentModule] || [];
-      const w = renderer.domElement.clientWidth, h = renderer.domElement.clientHeight;
-      items.forEach((item, idx) => {
-        if (!pins[idx]) return;
-        const v = new THREE.Vector3(item.pos[0], item.pos[1], item.pos[2]).applyMatrix4(rootGroup.matrixWorld).project(camera);
-        pins[idx].style.left = ((v.x * 0.5 + 0.5) * w) + 'px';
-        pins[idx].style.top = (-(v.y * 0.5 - 0.5) * h) + 'px';
+      (window.ANAT_LABELS[currentModule] || []).forEach((item, idx) => {
+        const pin = pins.item(idx);
+        if (!pin) return;
+        const p = project(item.pos.at(0), item.pos.at(1), item.pos.at(2), cx, cy, scale);
+        pin.style.left = p.sx + 'px'; pin.style.top = p.sy + 'px';
       });
     }
-    renderer.render(scene, camera);
   }
 
   return {
-    init, buildScene,
+    init,
+    buildScene(mod, stage) { currentModule = mod; currentStage = stage; },
     setView(v) {
-      if (v === 'front') { targetRotX = 0.1; targetRotY = 0; }
-      if (v === 'side') { targetRotX = 0.1; targetRotY = Math.PI / 2; }
-      if (v === 'top') { targetRotX = 1.15; targetRotY = 0; }
+      if (v === 'front') { targetRotX = 0.15; targetRotY = 0; }
+      if (v === 'side') { targetRotX = 0.15; targetRotY = Math.PI / 2; }
+      if (v === 'top') { targetRotX = 1.1; targetRotY = 0; }
     },
-    toggleXray() { isXray = !isXray; translucentMaterials.forEach((i) => (i.mat.opacity = isXray ? i.xray : i.normal)); return isXray; },
+    toggleXray() { isXray = !isXray; return isXray; },
     togglePause() { isPaused = !isPaused; return isPaused; }
   };
 })();
+window.AtlasScenes = window.AtlasScenes || {};
+
+window.AtlasScenes.drawSpine = function ({ sphere, tube, cx, cy, scale, t, stage, stColor }, isCervical) {
+  const pulse = 1 + Math.sin(t * 4) * 0.12;
+  const ys = isCervical ? [-1.1, 0, 1.1] : [-0.85, 0.85];
+  tube([[0, -1.8, -0.95], [0, 1.8, -0.95]], 0.24, '#facc15', cx, cy, scale);
+  ys.forEach((y, i) => {
+    sphere(0, y, 0, 0.92, '#cbd5e1', false, cx, cy, scale, 0.92);
+    sphere(0, y - 0.1, -1.35, 0.35, '#94a3b8', false, cx, cy, scale, 0.85);
+    if (i < ys.length - 1) sphere(0, (y + ys.at(i + 1)) / 2, 0, 0.82, '#0284c7', false, cx, cy, scale, 0.88);
+  });
+  if (isCervical) {
+    tube([[-1.15, -1.8, -0.6], [-1.15, 1.8, -0.6]], 0.14, '#ef4444', cx, cy, scale);
+    tube([[1.15, -1.8, -0.6], [1.15, 1.8, -0.6]], stage === 1 ? 0.06 : 0.14, '#ef4444', cx, cy, scale);
+  }
+  if (stage > 0) sphere(0.15, 0, -0.82, (stage === 1 ? 0.35 : 0.58) * pulse, stColor, true, cx, cy, scale);
+};
+
+window.AtlasScenes['0'] = (ctx) => window.AtlasScenes.drawSpine(ctx, false);
+
+window.AtlasScenes['1'] = ({ sphere, cx, cy, scale, t, stage, stColor }) => {
+  const pulse = 1 + Math.sin(t * 4) * 0.12;
+  sphere(-0.68, 0.25, 0, 1.35, '#94a3b8', false, cx, cy, scale, 0.45);
+  sphere(0.68, 0.25, 0, 1.35, '#94a3b8', false, cx, cy, scale, 0.45);
+  sphere(0, -0.95, -0.85, 0.72, '#64748b', false, cx, cy, scale, 0.65);
+  if (stage > 0) sphere(0.65, 0.35, 0.25, (stage === 1 ? 0.45 : 0.72) * pulse, stColor, true, cx, cy, scale);
+};
+
+window.AtlasScenes['2'] = ({ sphere, tube, cx, cy, scale, t, stage, stColor }) => {
+  sphere(-2.2, 0, 0, 0.72, '#facc15', true, cx, cy, scale);
+  tube([[-2.2, 0, 0], [2.4, 0, 0]], 0.12, '#eab308', cx, cy, scale);
+  [-1.1, -0.15, 0.8, 1.75].forEach((x, idx) => {
+    const dmg = (stage === 1 && idx === 2) || (stage === 2 && idx >= 2);
+    sphere(x, 0, 0, 0.32, dmg ? stColor : '#0284c7', dmg, cx, cy, scale);
+  });
+  const impX = -2.0 + ((t * 0.8) % 1) * (stage === 2 ? 2.5 : 4.3);
+  sphere(impX, 0, 0.1, 0.2, '#38bdf8', true, cx, cy, scale);
+};
+
+window.AtlasScenes['3'] = ({ sphere, tube, cx, cy, scale, t, stage, stColor }) => {
+  const pulse = 1 + Math.sin(t * 4) * 0.12;
+  const ring = [];
+  for (let a = 0; a <= 16; a++) { const ang = (a / 16) * Math.PI * 2; ring.push([Math.cos(ang) * 1.25, 0, Math.sin(ang) * 1.25]); }
+  tube(ring, 0.18, '#dc2626', cx, cy, scale);
+  tube([[-2.5, 0.1, 0.2], [-1.25, 0, 0.2]], 0.15, '#dc2626', cx, cy, scale);
+  tube([[1.25, 0, 0.2], [2.5, 0.1, 0.2]], 0.15, '#dc2626', cx, cy, scale);
+  if (stage > 0) sphere(1.25, 0.1, 0.35, (stage === 1 ? 0.28 : 0.5) * pulse, stColor, true, cx, cy, scale);
+};
+window.AtlasScenes = window.AtlasScenes || {};
+
+window.AtlasScenes['4'] = (ctx) => window.AtlasScenes.drawSpine(ctx, true);
+
+window.AtlasScenes['5'] = ({ sphere, tube, cx, cy, scale, t, stage, stColor }) => {
+  const pulse = 1 + Math.sin(t * 4) * 0.12;
+  const beat = 1 + Math.pow(Math.sin(t * 3.2), 4) * 0.08;
+  sphere(0, -0.1, 0, 1.48 * beat, '#dc2626', false, cx, cy, scale, 0.88);
+  tube([[-0.2, 1.1, 0], [0, 1.85, 0], [0.55, 1.45, -0.2]], 0.32, '#ef4444', cx, cy, scale);
+  tube([[0.1, 1.0, 1.1], [0.65, 0.3, 1.2], [0.4, -0.9, 0.95]], 0.1, '#facc15', cx, cy, scale);
+  if (stage > 0) sphere(0.64, 0.3, 1.22, (stage === 1 ? 0.22 : 0.38) * pulse, stColor, true, cx, cy, scale);
+};
+
+window.AtlasScenes['6'] = ({ sphere, tube, cx, cy, scale, t, stage, stColor }) => {
+  tube([[0, -1.9, 0], [0, 1.9, 0]], stage === 2 ? 0.85 : 0.58, '#2563eb', cx, cy, scale, 0.45);
+  tube([[-0.42, 0.3, 0], [0, stage === 0 ? 0.05 : 0.45, 0], [0.42, 0.3, 0]], 0.1, stColor, cx, cy, scale);
+  for (let i = 0; i < 6; i++) {
+    const y = -1.7 + (((t * 0.6 + i * 0.16) % 1) * 3.4);
+    sphere((i % 2 - 0.5) * 0.22, y, 0.1, 0.11, '#ef4444', false, cx, cy, scale);
+  }
+};
+
+window.AtlasScenes['7'] = ({ sphere, tube, cx, cy, scale, stage, stColor }) => {
+  sphere(0, 1.15, 0, 0.95, '#e2e8f0', false, cx, cy, scale, 0.92);
+  sphere(0, -1.15, 0, 0.92, '#e2e8f0', false, cx, cy, scale, 0.92);
+  tube([[-0.85, 0, 0], [0, 0, 0.85], [0.85, 0, 0]], 0.18, stage === 1 ? stColor : '#0284c7', cx, cy, scale);
+  tube([[-0.25, -0.5, 0], [0.25, 0.5, 0]], 0.14, stage === 2 ? stColor : '#facc15', cx, cy, scale);
+};
