@@ -52,6 +52,4 @@ window.AtlasRender = {
     ctx.beginPath(); proj.forEach((p, i) => (i === 0 ? ctx.moveTo(p.sx, p.sy) : ctx.lineTo(p.sx, p.sy)));
     ctx.closePath(); ctx.fill(); ctx.stroke(); ctx.restore();
   }
-
-  }
 };
