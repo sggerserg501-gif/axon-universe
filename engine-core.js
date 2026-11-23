@@ -59,3 +59,245 @@ window.AtlasRender = {
     ctx.closePath(); ctx.fill(); ctx.stroke(); ctx.restore();
   }
 };
+// ===== AtlasEngine: контейнер, взаимодействие, цикл отрисовки =====
+window.AtlasEngine = (function () {
+  // --- утилиты для построения сцен ---
+  function ringPts(x, y, z, r, n, axis) {
+    const pts = [];
+    for (let i = 0; i < n; i++) {
+      const a = (i / n) * Math.PI * 2;
+      if (axis === 'y') pts.push([x + r * Math.cos(a), y, z + r * Math.sin(a)]);
+      else pts.push([x + r * Math.cos(a), y + r * Math.sin(a), z]);
+    }
+    return pts;
+  }
+  function sphere(col, glow) {
+    return (x, y, z, r) => ({ z: [x, y, z], draw: (ctx, cx, cy, s) =>
+      AtlasRender.sphere(ctx, x, y, z, r, col, glow, cx, cy, s, 1) });
+  }
+  function tube(col, radius) {
+    return (pts) => ({ z: pts[Math.floor(pts.length / 2)], draw: (ctx, cx, cy, s) =>
+      AtlasRender.tube(ctx, pts, radius, col, cx, cy, s, 1) });
+  }
+  function polyFill(dark, light) {
+    return (pts) => ({ z: pts[Math.floor(pts.length / 2)], draw: (ctx, cx, cy, s) =>
+      AtlasRender.poly(ctx, pts, dark, light, undefined, cx, cy, s, 1) });
+  }
+
+  // --- 12 сцен-заглушек (по модулю), stage 0 — норма, 1-2 — с патологией ---
+  const SCENES = [
+    // 0: поясничный отдел
+    (st) => {
+      const o = [];
+      o.push(polyFill('#1e3a5f', '#3b82f6')(ringPts(0, 0.9, 0, 0.75, 10, 'y')));
+      if (st > 0) o.push(sphere('#ef4444', true)(0, 0.45, 1.05, 0.22));
+      else o.push(sphere('#38bdf8', true)(0, 0.45, 1.05, 0.2));
+      o.push(tube('#f472b6', 0.06)([[0, -0.2, -0.3], [0, -0.9, -0.5], [0, -1.6, -0.55]]));
+      return o;
+    },
+    // 1: головной мозг
+    (st) => {
+      const o = [];
+      o.push(sphere('#818cf8', true)(-0.55, 1.35, 0, 0.7));
+      o.push(sphere('#818cf8', true)(0.55, 1.35, 0, 0.7));
+      o.push(sphere('#a78bfa', true)(0, -0.85, -1.05, 0.45));
+      o.push(tube('#c084fc', 0.14)([[0, -0.5, -0.9], [0, -1.0, -0.5], [0, -1.5, -0.3]]));
+      if (st > 0) o.push(sphere('#ef4444', true)(0.35, 1.1, 0.3, 0.18));
+      return o;
+    },
+    // 2: нейрон
+    (st) => {
+      const o = [];
+      o.push(sphere('#34d399', true)(-2.6, 0.85, 0, 0.4));
+      o.push(tube('#22d3ee', 0.1)([[-2.2, 0.8, 0], [-0.6, 0.4, 0], [0.9, 0.4, 0], [2.3, 0.45, 0]]));
+      o.push(sphere('#f472b6', true)(2.65, 0.45, 0, 0.3));
+      if (st > 0) o.push(sphere('#ef4444', true)(-0.6, 0.4, 0, 0.22));
+      return o;
+    },
+    // 3: артерии мозга
+    () => {
+      const o = [];
+      o.push(tube('#f87171', 0.09)(ringPts(0, 0.3, -0.3, 0.9, 14, 'y').concat(ringPts(0, 0.3, -0.3, 0.9, 14, 'y').slice(0, 1))));
+      o.push(tube('#f87171', 0.08)([[0, 0.3, -0.3], [0, 0.25, 1.2]]));
+      o.push(tube('#fb923c', 0.07)([[0.6, 0.3, 0], [2.1, 0.25, 0.15]]));
+      o.push(tube('#fb923c', 0.07)([[-0.6, 0.3, 0], [-2.1, 0.25, 0.15]]));
+      o.push(tube('#f87171', 0.08)([[0, 0.1, -0.4], [0, -0.85, -1.4]]));
+      return o;
+    },
+    // 4: шейный позвонок C5
+    (st) => {
+      const o = [];
+      o.push(polyFill('#1e3a5f', '#3b82f6')(ringPts(0, 0.6, 0, 0.7, 10, 'y')));
+      o.push(polyFill('#1e3a5f', '#3b82f6')(ringPts(0, -0.3, 0, 0.55, 10, 'y')));
+      o.push(tube('#60a5fa', 0.07)([[1.0, 0.4, -0.6], [1.2, -0.1, -0.7], [1.1, -0.7, -0.7]]));
+      o.push(tube('#60a5fa', 0.07)([[-1.0, 0.4, -0.6], [-1.2, -0.1, -0.7], [-1.1, -0.7, -0.7]]));
+      if (st > 0) o.push(sphere('#ef4444', true)(0, 0.15, 0.6, 0.2));
+      return o;
+    },
+    // 5: сердце
+    (st) => {
+      const o = [];
+      o.push(sphere('#f87171', true)(-0.35, 0.2, 0, 0.75));
+      o.push(sphere('#ef4444', true)(0.35, 0.2, 0, 0.7));
+      o.push(tube('#fb923c', 0.13)([[0, 0.75, 0], [0.2, 1.5, -0.2], [-0.4, 1.95, 0], [-1.0, 1.7, 0.1]]));
+      o.push(tube('#fca5a5', 0.05)([[0.4, 0.35, 0.6], [0.68, 0.35, 1.2]]));
+      o.push(tube('#fca5a5', 0.05)([[-0.3, 0.3, 0.6], [-0.55, 0.3, 1.1]]));
+      if (st > 0) o.push(sphere('#ef4444', true)(0.35, 0.2, 0.5, 0.18));
+      return o;
+    },
+    // 6: вена с клапаном
+    (st) => {
+      const o = [];
+      o.push(tube('#60a5fa', 0.18)([[0, 1.3, 0], [0.05, 0.8, 0], [0.45, 0.15, 0], [0.4, -0.6, 0]]));
+      o.push(polyFill('#1d4ed8', '#3b82f6')(ringPts(0.47, 0.12, 0, 0.2, 8, 'x')));
+      if (st > 0) o.push(sphere('#ef4444', true)(0.2, 0.6, 0, 0.16));
+      return o;
+    },
+    // 7: коленный сустав
+    (st) => {
+      const o = [];
+      o.push(tube('#fbbf24', 0.22)([[0, 1.35, 0], [0, 0.7, 0.05]]));
+      o.push(tube('#fbbf24', 0.2)([[0, -0.9, 0], [0, -0.2, 0.05]]));
+      o.push(sphere('#a3e635', true)(0.85, 0.05, 0.3, 0.22));
+      o.push(tube('#f472b6', 0.06)([[0.2, 0.5, 0.2], [0.05, 0.05, 0.2], [0.25, -0.5, 0.15]]));
+      o.push(tube('#f472b6', 0.06)([[-0.2, 0.5, -0.2], [-0.05, 0.05, -0.2], [-0.25, -0.5, -0.15]]));
+      if (st > 0) o.push(sphere('#ef4444', true)(0.5, 0.05, 0.15, 0.15));
+      return o;
+    },
+    // 8: глаз
+    (st) => {
+      const o = [];
+      o.push(polyFill('#0e7490', '#22d3ee')(ringPts(0, 0, 0.3, 0.8, 16, 'y')));
+      o.push(sphere('#e0f2fe', true)(0, 0, 1.05, 0.28));
+      o.push(sphere('#f43f5e', true)(0, 0, -0.5, 0.5));
+      o.push(tube('#fbbf24', 0.1)([[-0.3, -0.2, -0.7], [-0.45, -0.25, -1.3], [-0.45, -0.25, -1.9]]));
+      if (st > 0) o.push(sphere('#ef4444', true)(0.2, 0.1, -0.4, 0.15));
+      return o;
+    },
+    // 9: почка
+    (st) => {
+      const o = [];
+      o.push(polyFill('#4c1d95', '#8b5cf6')(ringPts(0.2, 0.2, 0, 0.75, 12, 'z')));
+      o.push(sphere('#fde68a', true)(-0.35, 0, 0, 0.25));
+      o.push(tube('#a78bfa', 0.08)([[-0.55, -0.3, 0], [-0.6, -0.9, 0], [-0.6, -1.5, 0]]));
+      if (st > 0) o.push(sphere('#ef4444', true)(0.35, -0.3, 0.2, 0.2));
+      return o;
+    },
+    // 10: печень и желчный пузырь
+    (st) => {
+      const o = [];
+      o.push(polyFill('#7c2d12', '#b45309')(ringPts(-0.3, 0.4, 0, 0.9, 12, 'y')));
+      o.push(polyFill('#7c2d12', '#b45309')(ringPts(-0.3, -0.4, 0.2, 0.7, 12, 'y')));
+      o.push(sphere('#4ade80', true)(-0.35, -0.68, 0.25, 0.24));
+      o.push(tube('#facc15', 0.06)([[-0.35, -0.8, 0.25], [-0.15, -1.1, 0.1], [-0.15, -1.35, 0.1]]));
+      if (st > 0) o.push(sphere('#ef4444', true)(-0.2, -0.5, 0.2, 0.16));
+      return o;
+    },
+    // 11: желудок
+    (st) => {
+      const o = [];
+      o.push(tube('#fda4af', 0.12)([[-0.45, 1.55, 0], [-0.2, 1.1, 0], [0, 0.8, 0]]));
+      o.push(polyFill('#9a3412', '#fb7185')(ringPts(0.35, 0.15, 0, 0.8, 14, 'y')));
+      o.push(tube('#fda4af', 0.09)([[-0.5, -0.2, 0], [-1.0, -0.45, 0.1], [-1.35, -0.45, 0.1]]));
+      if (st > 0) o.push(sphere('#ef4444', true)(0.35, 0.3, 0.4, 0.18));
+      return o;
+    }
+  ];
+
+  const engine = {
+    canvas: null, ctx: null, W: 0, H: 0, cx: 0, cy: 0, scale: 160,
+    objects: [], paused: false, dragging: false,
+    lastX: 0, lastY: 0, autoSpeed: 0.004, t: 0,
+
+    init(containerId, onReady) {
+      const host = document.getElementById(containerId);
+      if (!host) { console.warn('AtlasEngine: контейнер "' + containerId + '" не найден'); return; }
+      this.canvas = document.createElement('canvas');
+      host.appendChild(this.canvas);
+      this.ctx = this.canvas.getContext('2d');
+
+      const resize = () => {
+        const r = host.getBoundingClientRect();
+        if (!r.width || !r.height) return;
+        const dpr = window.devicePixelRatio || 1;
+        this.W = r.width; this.H = r.height;
+        this.canvas.width = r.width * dpr; this.canvas.height = r.height * dpr;
+        this.canvas.style.width = r.width + 'px'; this.canvas.style.height = r.height + 'px';
+        this.ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+        this.cx = this.W / 2; this.cy = this.H / 2;
+      };
+      resize();
+      window.addEventListener('resize', resize);
+
+      this.canvas.style.cursor = 'grab';
+      this.canvas.addEventListener('mousedown', (e) => {
+        this.dragging = true; this.lastX = e.clientX; this.lastY = e.clientY;
+        this.canvas.style.cursor = 'grabbing';
+      });
+      window.addEventListener('mouseup', () => { this.dragging = false; this.canvas.style.cursor = 'grab'; });
+      window.addEventListener('mousemove', (e) => {
+        if (!this.dragging) return;
+        AtlasRender.rotY += (e.clientX - this.lastX) * 0.006;
+        AtlasRender.rotX = Math.max(-1.2, Math.min(1.2, AtlasRender.rotX + (e.clientY - this.lastY) * 0.006));
+        this.lastX = e.clientX; this.lastY = e.clientY;
+      });
+      this.canvas.addEventListener('touchstart', (e) => {
+        const t = e.touches[0]; this.dragging = true; this.lastX = t.clientX; this.lastY = t.clientY;
+      }, { passive: true });
+      this.canvas.addEventListener('touchmove', (e) => {
+        if (!this.dragging) return;
+        const t = e.touches[0];
+        AtlasRender.rotY += (t.clientX - this.lastX) * 0.006;
+        AtlasRender.rotX = Math.max(-1.2, Math.min(1.2, AtlasRender.rotX + (t.clientY - this.lastY) * 0.006));
+        this.lastX = t.clientX; this.lastY = t.clientY;
+      }, { passive: true });
+      this.canvas.addEventListener('touchend', () => { this.dragging = false; });
+      this.canvas.addEventListener('wheel', (e) => {
+        e.preventDefault();
+        this.scale = Math.max(40, Math.min(500, this.scale * (e.deltaY < 0 ? 1.1 : 0.9)));
+      }, { passive: false });
+
+      if (onReady) onReady();
+      this.loop();
+    },
+
+    loop() {
+      const step = () => {
+        if (!this.paused && !this.dragging) AtlasRender.rotY += this.autoSpeed;
+        this.draw();
+        if (typeof window._onEngineFrame === 'function') window._onEngineFrame();
+        requestAnimationFrame(step);
+      };
+      requestAnimationFrame(step);
+    },
+
+    draw() {
+      const ctx = this.ctx;
+      ctx.clearRect(0, 0, this.W, this.H);
+      AtlasRender.grid(ctx, this.W, this.H);
+      const items = this.objects
+        .map((o) => ({ o, p: AtlasRender.project(o.z[0], o.z[1], o.z[2], this.cx, this.cy, this.scale) }))
+        .filter((i) => !Number.isNaN(i.p.sx))
+        .sort((a, b) => a.p.z2 - b.p.z2); // дальние раньше, ближние поверх
+      items.forEach((i) => i.o.draw(ctx, this.cx, this.cy, this.scale, this.t));
+      this.t += 0.016;
+    },
+
+    buildScene(mod, stage) {
+      this.objects = SCENES[mod] ? SCENES[mod](stage) : [];
+    },
+
+    setView(v) {
+      const views = { front: { rx: 0.25, ry: 0 }, side: { rx: 0.25, ry: Math.PI / 2 }, top: { rx: 1.35, ry: 0 } };
+      const t = views[v] || views.front;
+      AtlasRender.rotX = t.rx; AtlasRender.rotY = t.ry;
+    },
+
+    toggleXray() { AtlasRender.isXray = !AtlasRender.isXray; return AtlasRender.isXray; },
+    togglePause() { this.paused = !this.paused; return this.paused; },
+    getView() { return { cx: this.cx, cy: this.cy, scale: this.scale }; }
+  };
+  return engine;
+})();
+
+
