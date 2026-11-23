@@ -1,8 +1,7 @@
 (function () {
-  const base = 'https://jsdelivr.net';
   const parts = [
-    base + '/build/three.min.js',
-    base + '/examples/js/loaders/GLTFLoader.js',
+    'three.min.js',
+    'GLTFLoader.js',
     'glb-data.js',
     'glb-work.js'
   ];
