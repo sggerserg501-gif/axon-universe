@@ -1,23 +1,20 @@
 window.AtlasScenes = window.AtlasScenes || {};
-
-window.AtlasScenes['13'] = ({ ctx, R, cx, cy, scale, t, stage, stColor }) => {
-  const pulse = 1 + Math.sin(t * 4) * 0.14, bend = stage * 0.25;
-  R.tube(ctx, [[0, -1.8, -0.8], [0, 0, -0.8 - bend], [0, 1.8, -0.8]], 0.18, '#facc15', cx, cy, scale);
-  [-1.2, -0.6, 0, 0.6, 1.2].forEach((y, i) => {
-    const z = -0.2 - Math.cos((y / 1.4) * 1.2) * bend;
-    R.poly(ctx, [[-0.65, y + 0.22, z + 0.45], [0.65, y + 0.22, z + 0.45], [0.65, y - 0.22, z + 0.45], [-0.65, y - 0.22, z + 0.45]], i === 2 && stage > 0 ? '#fde68a' : '#cbd5e1', '#f8fafc', '#94a3b8', cx, cy, scale, 0.94);
-    if (i >= 1 && i <= 3) {
-      R.tube(ctx, [[-0.55, y, z], [-1.55, y - 0.15, z + 0.85]], 0.11, '#cbd5e1', cx, cy, scale);
-      R.tube(ctx, [[0.55, y, z], [1.55, y - 0.15, z + 0.85]], 0.11, '#cbd5e1', cx, cy, scale);
-    }
+window.AtlasScenes['13'] = ({ THREE, root, W, stage, stColor, isXray }) => {
+  const bone = W.mat('bone', '#e2e8f0', isXray), bend = stage * 0.22;
+  [-1.1, -0.55, 0, 0.55, 1.1].forEach((y, i) => {
+    const z = -Math.cos(y) * bend;
+    const v = new THREE.Mesh(W.sculpt(new THREE.CylinderGeometry(0.58, 0.6, 0.42, 24), 0.03, 6), bone);
+    v.position.set(0, y, z); root.add(v);
+    if (i >= 1 && i <= 3) [-1, 1].forEach(s => {
+      const rib = new THREE.Mesh(new THREE.TorusGeometry(1.05, 0.08, 12, 24, Math.PI * 0.65), bone);
+      rib.rotation.x = Math.PI / 2; rib.rotation.z = s > 0 ? -0.4 : 1.5; rib.position.set(0, y, z + 0.55); root.add(rib);
+    });
   });
-  if (stage > 0) R.sphere(ctx, 0.75, 0, -0.25 - bend, (stage === 1 ? 0.24 : 0.44) * pulse, stColor, true, cx, cy, scale);
 };
-
 (function () {
   if (!window.DB || !window.ANAT_LABELS) return;
-  window.ANAT_LABELS = [
-    { pos: [0, 0.6, 0.4], ru: 'Грудной позвонок', en: 'Thoracic Vertebra', es: 'Vértebra torácica', de: 'Brustwirbel', zh: '胸椎' },
+   window.ANAT_LABELS[13] = [
+ { pos: [0, 0.6, 0.4], ru: 'Грудной позвонок', en: 'Thoracic Vertebra', es: 'Vértebra torácica', de: 'Brustwirbel', zh: '胸椎' },
     { pos: [1.35, 0, 0.65], ru: 'Рёберная дуга', en: 'Costal Arch (Rib)', es: 'Arco costal', de: 'Rippenbogen', zh: '肋弓' },
     { pos: [0, -1.2, -0.8], ru: 'Спинной мозг', en: 'Spinal Cord', es: 'Médula espinal', de: 'Rückenmark', zh: '脊髓' }
   ];
