@@ -1,8 +1,8 @@
 :root {
-  --bg-main: #0c192c;
-  --bg-panel: rgba(18, 36, 62, 0.88);
-  --bg-card: #162b4a;
-  --border-color: rgba(56, 189, 248, 0.25);
+--bg-main: #163159;
+--bg-panel: rgba(24, 52, 92, 0.9);
+--bg-card: #1e4073;
+--border-color: rgba(56, 189, 248, 0.25);
   --text-primary: #f8fafc;
   --text-secondary: #cbd5e1;
   --accent-primary: #38bdf8;
