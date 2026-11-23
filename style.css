@@ -29,7 +29,7 @@ body {
 .topbar {
   height: 64px;
   padding: 0 24px;
- background: #10223d;
+ background: #183561;
  border-bottom: 1px solid var(--border-color);
   display: flex;
   align-items: center;
@@ -134,7 +134,7 @@ body {
 
 /* Левая панель */
 .sidebar {
-  background: #0e1e36;
+  background: #142c52;
   border-right: 1px solid var(--border-color);
   padding: 16px;
   overflow-y: auto;
@@ -184,7 +184,7 @@ body {
 /* 3D Вьюпорт */
 .viewport-container {
   position: relative;
-  background: radial-gradient(circle at center, #1e4273 0%, #0e203b 70%, #091529 100%);
+ background: radial-gradient(circle at center, #2d62ad 0%, #193866 68%, #102445 100%);
  overflow: hidden;
 }
 
