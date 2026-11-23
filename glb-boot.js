@@ -1,6 +1,5 @@
 (function () {
   const parts = [
-    'three.min.js',
     'GLTFLoader.js',
     'glb-data.js',
     'glb-work.js'
@@ -14,3 +13,4 @@
   }
   next(0);
 })();
+
