@@ -13,7 +13,21 @@ window.AtlasScenes.drawSpine = function (c, neck) {
     ctx.beginPath();
     ctx.arc(p.sx, p.sy, Math.max(1, r * scale), 0, Math.PI * 2);
     ctx.fillStyle = color;
-    ctx.fill();
+    // Тень для объёма
+ctx.shadowColor = 'rgba(0, 0, 0, 0.35)';
+ctx.shadowBlur = 8;
+ctx.shadowOffsetX = 2;
+ctx.shadowOffsetY = 2;
+
+// Аккуратная обводка — сразу похоже на кольца
+ctx.strokeStyle = '#64748b';
+ctx.lineWidth = 1.8;
+ctx.stroke();
+
+// Сбрасываем тень, чтобы не размазывалась по всему холсту
+ctx.shadowColor = 'transparent';
+ctx.shadowBlur = 0;
+ctx.fill();
     ctx.globalAlpha = 1;
   }
 
