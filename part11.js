@@ -1,37 +1,45 @@
 (function () {
-  window.zoomStep = function (delta) {
-    if (typeof zoom !== "undefined") {
-      zoom = Math.max(0.5, Math.min(3.8, zoom + delta));
+  if (!window.DB) return;
+  const newTabsRu = ['Глаз и зрительный нерв', 'Почки и мочеточник', 'Печень и желчные пути', 'Желудок и 12-п. кишка'];
+  const newTabsEn = ['Eye & Optic Nerve', 'Kidney & Ureter', 'Liver & Biliary Tract', 'Stomach & Duodenum'];
+
+  const extra = [
+    {
+      buttons: ['1. Норма оптики', '2. Катаракта', '3. Отслойка сетчатки'],
+      states: [
+        { pill: 'Норма', color: '#38bdf8', title: 'Прозрачный хрусталик и здоровая сетчатка', desc: 'Роговица и хрусталик фокусируют свет точно на сетчатку, а зрительный нерв без искажений передаёт сигнал в мозг.', tactics: 'Плановый осмотр офтальмолога раз в год и защита глаз от УФ-излучения.', author: 'OpenNeuroAtlas' },
+        { pill: 'Помутнение', color: '#f59e0b', title: 'Начальная катаракта (помутнение хрусталика)', desc: 'Снижается прозрачность хрусталика, изображение становится туманным, появляется ореол вокруг источников света.', tactics: 'Наблюдение, подбор коррекции; при снижении зрения — плановая замена хрусталика.', author: 'OpenNeuroAtlas' },
+        { pill: 'Острое состояние', color: '#ef4444', title: 'Локальная отслойка сетчатки / Глаукома', desc: 'Нарушение прилегания нейросенсорной сетчатки или критическое повышение внутриглазного давления.', tactics: 'Экстренная консультация офтальмохирурга.', author: 'OpenNeuroAtlas' }
+      ]
+    },
+    {
+      buttons: ['1. Норма фильтрации', '2. Конкремент (Камень)', '3. Гидронефроз'],
+      states: [
+        { pill: 'Норма', color: '#38bdf8', title: 'Здоровая почка и уродинамика', desc: 'Корковое и мозговое вещество нормально фильтруют кровь, лоханка и мочеточник свободно отводят мочу.', tactics: 'Достаточный питьевой режим и контроль артериального давления.', author: 'OpenNeuroAtlas' },
+        { pill: 'Риск обструкции', color: '#f59e0b', title: 'Мочекаменная болезнь (конкремент лоханки)', desc: 'Кристаллизация солей с образованием плотного конкремента в чашечно-лоханочной системе.', tactics: 'УЗИ почек, лабораторный контроль и терапия по назначению уролога.', author: 'OpenNeuroAtlas' },
+        { pill: 'Нарушение оттока', color: '#ef4444', title: 'Обструкция мочеточника и гидронефроз', desc: 'Перекрытие оттока мочи вызывает расширение лоханки и сдавление паренхимы почки.', tactics: 'Неотложная урологическая помощь для восстановления оттока мочи.', author: 'OpenNeuroAtlas' }
+      ]
+    },
+    {
+      buttons: ['1. Норма паренхимы', '2. Холестаз / Стеатоз', '3. Фиброз / Гипертензия'],
+      states: [
+        { pill: 'Норма', color: '#38bdf8', title: 'Здоровая печень и желчевыводящие пути', desc: 'Гепатоциты активно участвуют в обмене веществ и детоксикации, желчный пузырь своевременно сокращается.', tactics: 'Сбалансированное питание и умеренная физическая активность.', author: 'OpenNeuroAtlas' },
+        { pill: 'Метаболический риск', color: '#f59e0b', title: 'Жировой гепатоз и застой желчи', desc: 'Накопление липидов в клетках печени или сгущение желчи с нарушением моторики пузыря.', tactics: 'Коррекция рациона, снижение массы тела и контроль биохимии крови.', author: 'OpenNeuroAtlas' },
+        { pill: 'Хронический процесс', color: '#ef4444', title: 'Выраженный фиброз и портальная гипертензия', desc: 'Замещение функциональной ткани соединительной тканью с повышением давления в системе воротной вены.', tactics: 'Комплексное наблюдение гепатолога и профилактика осложнений.', author: 'OpenNeuroAtlas' }
+      ]
+    },
+    {
+      buttons: ['1. Норма слизистой', '2. Эрозивный гастрит', '3. Язвенный дефект'],
+      states: [
+        { pill: 'Норма', color: '#38bdf8', title: 'Здоровая слизистая желудка и 12-перстной кишки', desc: 'Защитный муциновый барьер надёжно предохраняет стенку желудка от воздействия соляной кислоты.', tactics: 'Регулярный режим питания и бережное отношение к ЖКТ.', author: 'OpenNeuroAtlas' },
+        { pill: 'Воспаление', color: '#f59e0b', title: 'Поверхностный и эрозивный гастрит', desc: 'Локальное воспаление и поверхностные дефекты эпителия на фоне повышенной кислотности или стресса.', tactics: 'Гастропротекция, диета и диагностика H. pylori у гастроэнтеролога.', author: 'OpenNeuroAtlas' },
+        { pill: 'Глубокий дефект', color: '#ef4444', title: 'Язвенная болезнь желудка / 12-перстной кишки', desc: 'Глубокое повреждение слизистого и подслизистого слоёв с риском кровотечения.', tactics: 'Обязательная гастроскопия (ЭГДС) и комплексная терапия.', author: 'OpenNeuroAtlas' }
+      ]
     }
-  };
+  ];
 
-  const warmNotes = {
-    ru: "💛 Помните: организм человека обладает огромным запасом прочности и способностью к восстановлению. Эта 3D-модель создана, чтобы спокойно и наглядно разобраться в биомеханике своего тела вместе с врачом.",
-    en: "💛 Remember: the human body has remarkable resilience and capacity for recovery. This 3D model helps you calmly understand your body's biomechanics together with your doctor.",
-    es: "💛 Recuerda: el cuerpo humano tiene una gran capacidad de recuperación. Este modelo 3D te ayuda a comprender tu biomecánica con calma junto a tu médico.",
-    de: "💛 Denken Sie daran: Der menschliche Körper besitzt eine enorme Kraft zur Erholung. Dieses 3D-Modell hilft Ihnen, Ihre Biomechanik gemeinsam mit Ihrem Arzt in Ruhe zu verstehen.",
-    zh: "💛 请记住：人体拥有强大的自我修复与恢复能力。此 3D 模型旨在帮助您与医生一起平和、清晰地了解身体生物力学结构。"
-  };
-
-  const origUpdateUI = window.updateUI;
-  window.updateUI = function () {
-    try {
-      if (typeof origUpdateUI === "function") origUpdateUI();
-      const card = document.getElementById("clinicalCard");
-      if (!card) return;
-      let note = document.getElementById("warmCareNote");
-      if (!note) {
-        note = document.createElement("div");
-        note.id = "warmCareNote";
-        note.style.cssText = "margin-top:12px;padding:11px 13px;background:rgba(14,165,233,0.14);border-left:3px solid #38bdf8;border-radius:6px;font-size:13.5px;line-height:1.55;color:#e0f2fe;";
-        card.appendChild(note);
-      }
-      const lang = typeof currentLang !== "undefined" ? currentLang : "ru";
-      note.textContent = warmNotes[lang] || warmNotes.ru;
-    } catch (e) {}
-  };
-
-  try {
-    if (typeof window.updateUI === "function") window.updateUI();
-  } catch (e) {}
+  Object.keys(DB).forEach((lang) => {
+    DB[lang].ui.tabs.push(...(lang === 'ru' ? newTabsRu : newTabsEn));
+    DB[lang].modules.push(...extra);
+  });
 })();
