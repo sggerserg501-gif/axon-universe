@@ -1,14 +1,13 @@
 window.AtlasScenes = window.AtlasScenes || {};
-
-window.AtlasScenes['12'] = ({ ctx, R, cx, cy, scale, t, stage, stColor }) => {
-  const pulse = 1 + Math.sin(t * 4) * 0.14, shift = stage * 0.12;
-  // Вертлужная впадина таза и суставной хрящ
-  R.poly(ctx, [[-1.35, 1.35, 0], [-0.25, 1.55, 0], [0.75, 0.95, 0], [0.55, 0.15, 0], [-0.45, 0.45, 0], [-1.15, 0.25, 0]], '#94a3b8', '#e2e8f0', '#64748b', cx, cy, scale, 0.92);
-  R.tube(ctx, [[-0.95, 0.28, 0.1], [-0.25, 0.52, 0.1], [0.45, 0.22, 0.1]], stage === 0 ? 0.14 : 0.06, stColor, cx, cy, scale);
-  // Головка, шейка и тело бедренной кости
-  R.sphere(ctx, -0.22, -0.08 + shift, 0, 0.62, '#e2e8f0', false, cx, cy, scale, 0.95);
-  R.poly(ctx, [[-0.05, -0.15 + shift, 0], [0.65, -0.55 + shift, 0], [0.85, -1.85, 0], [0.25, -1.85, 0], [0.15, -0.75 + shift, 0], [-0.35, -0.35 + shift, 0]], '#cbd5e1', '#f8fafc', '#94a3b8', cx, cy, scale, 0.95);
-  if (stage > 0) R.sphere(ctx, -0.22, 0.48, 0.2, (stage === 1 ? 0.22 : 0.42) * pulse, stColor, true, cx, cy, scale);
+window.AtlasScenes['12'] = ({ THREE, root, W, stage, stColor, isXray }) => {
+  const bone = W.mat('bone', '#e2e8f0', isXray);
+  const pelvis = new THREE.Mesh(W.sculpt(new THREE.SphereGeometry(1.15, 32, 32), 0.06, 6), bone);
+  pelvis.scale.set(1.15, 0.65, 0.75); pelvis.position.set(-0.25, 0.95, 0); root.add(pelvis);
+  const head = new THREE.Mesh(new THREE.SphereGeometry(0.56, 32, 32), bone);
+  head.position.set(-0.22, -0.05 + stage * 0.1, 0); root.add(head);
+  const shaft = new THREE.Mesh(new THREE.CylinderGeometry(0.28, 0.32, 1.75, 24), bone);
+  shaft.rotation.z = 0.25; shaft.position.set(0.35, -0.95, 0); root.add(shaft);
+  if (stage > 0) { const f = new THREE.Mesh(new THREE.SphereGeometry(0.28, 20, 20), W.mat('glow', stColor, false)); f.position.set(-0.22, 0.48, 0.2); root.add(f); }
 };
 
 (function () {
