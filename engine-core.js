@@ -5,12 +5,15 @@ window.AtlasRender = {
     const x1 = x * cosY - z * sinY, z1 = z * cosY + x * sinY;
     const cosX = Math.cos(this.rotX), sinX = Math.sin(this.rotX);
     const y2 = y * cosX - z1 * sinX, z2 = z1 * cosX + y * sinX;
-    const fov = 5.5 / (5.5 + z2);
-    return { sx: cx + x1 * scale * fov, sy: cy - y2 * scale * fov, fov };
+    const near = 5.5 + z2;
+    if (near < 0.1) return { sx: NaN, sy: NaN, fov: 0, z2 }; // точка за камерой — отбрасываем
+    const fov = 5.5 / near;
+    return { sx: cx + x1 * scale * fov, sy: cy - y2 * scale * fov, fov, z2 };
   },
   sphere(ctx, x, y, z, r, color, glow, cx, cy, scale, alpha) {
     const a = alpha === undefined ? 1 : alpha;
     const p = this.project(x, y, z, cx, cy, scale);
+    if (Number.isNaN(p.sx)) return;
     const rad = Math.max(2, r * scale * p.fov);
     ctx.save(); ctx.globalAlpha = this.isXray ? a * 0.35 : a;
     const g = ctx.createRadialGradient(p.sx - rad * 0.32, p.sy - rad * 0.32, rad * 0.08, p.sx, p.sy, rad);
@@ -24,13 +27,14 @@ window.AtlasRender = {
     ctx.save(); ctx.globalAlpha = this.isXray ? a * 0.45 : a;
     ctx.strokeStyle = color; ctx.lineCap = 'round'; ctx.lineJoin = 'round';
     for (let i = 0; i < pts.length - 1; i++) {
-      const a1 = pts.at(i), a2 = pts.at(i + 1);
-      const p1 = this.project(a1.at(0), a1.at(1), a1.at(2), cx, cy, scale);
-      const p2 = this.project(a2.at(0), a2.at(1), a2.at(2), cx, cy, scale);
+      const a1 = pts[i], a2 = pts[i + 1];
+      const p1 = this.project(a1[0], a1[1], a1[2], cx, cy, scale);
+      const p2 = this.project(a2[0], a2[1], a2[2], cx, cy, scale);
+      if (Number.isNaN(p1.sx) || Number.isNaN(p2.sx)) continue;
       ctx.lineWidth = Math.max(2, radius * scale * ((p1.fov + p2.fov) / 2));
       ctx.beginPath(); ctx.moveTo(p1.sx, p1.sy); ctx.lineTo(p2.sx, p2.sy); ctx.stroke();
     }
-     ctx.restore();
+    ctx.restore();
   },
   grid(ctx, w, h) {
     ctx.save(); ctx.strokeStyle = 'rgba(56, 189, 248, 0.09)'; ctx.lineWidth = 1;
@@ -42,7 +46,9 @@ window.AtlasRender = {
   },
   poly(ctx, pts3d, fillDark, fillLight, stroke, cx, cy, scale, alpha) {
     const a = alpha === undefined ? 1 : alpha;
-    const proj = pts3d.map((pt) => this.project(pt.at(0), pt.at(1), pt.at(2), cx, cy, scale));
+    const proj = pts3d.map((pt) => this.project(pt[0], pt[1], pt[2], cx, cy, scale))
+                      .filter((p) => !Number.isNaN(p.sx));
+    if (proj.length < 3) return; // почти весь полигон за камерой — не рисуем
     let minX = 1e9, maxX = -1e9, minY = 1e9, maxY = -1e9;
     proj.forEach((p) => { if (p.sx < minX) minX = p.sx; if (p.sx > maxX) maxX = p.sx; if (p.sy < minY) minY = p.sy; if (p.sy > maxY) maxY = p.sy; });
     ctx.save(); ctx.globalAlpha = this.isXray ? a * 0.3 : a;
