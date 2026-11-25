@@ -50,27 +50,72 @@ window.AtlasScenes['1'] = ({ ctx, R, cx, cy, scale, t, stage, stColor }) => {
     });
   }
 
-  // Объёмные полушария мозга (левое и правое, с лобной, теменной, височной и затылочной долями)
-  [-0.46, 0.46].forEach((hz) => {
-    dome(0.05, 0.42, hz, 1.48, 1.02, 0.44, '#94a3b8', '#e2e8f0', 0.95);
-    dome(0.18, -0.08, hz * 1.08, 0.95, 0.48, 0.36, '#78889c', '#cbd5e1', 0.94);
+   function drawSulcus(pts3D, width, darkCol, lightCol, zBias) {
+    const proj = pts3D.map((pt) => P(...pt));
+    const avgZ = proj.reduce((s, p) => s + (p.z || 0), 0) / proj.length + (zBias || 0.02);
+    layers.push({
+      z: avgZ,
+      draw() {
+        ctx.save();
+        ctx.lineCap = 'round';
+        ctx.lineJoin = 'round';
+        const trace = (dy) => {
+          ctx.beginPath();
+          proj.forEach((p, i) => {
+            if (i === 0) ctx.moveTo(p.sx, p.sy + dy);
+            else if (i < proj.length - 1) {
+              const nx = (p.sx + proj[i + 1].sx) / 2;
+              const ny = (p.sy + proj[i + 1].sy) / 2 + dy;
+              ctx.quadraticCurveTo(p.sx, p.sy + dy, nx, ny);
+            } else {
+              ctx.lineTo(p.sx, p.sy + dy);
+            }
+          });
+        };
+        if (lightCol) {
+          trace(1.5);
+          ctx.strokeStyle = lightCol;
+          ctx.lineWidth = Math.max(1.2, width * scale * 1.15);
+          ctx.stroke();
+        }
+        trace(0);
+        ctx.strokeStyle = darkCol;
+        ctx.lineWidth = Math.max(1.1, width * scale);
+        ctx.stroke();
+        ctx.restore();
+      }
+    });
+  }
 
-    // Борозды коры (центральная, сильвиева и извилины)
-    const side = hz > 0 ? 1 : -1;
-    sulcus([[0.05, 1.28, hz * 0.7], [-0.08, 0.65, hz * 1.38], [-0.15, 0.12, hz * 1.42]], 0.045, '#475569');
-    sulcus([[0.82, 0.15, hz * 1.25], [0.15, 0.08, hz * 1.45], [-0.58, 0.28, hz * 1.32]], 0.05, '#334155');
-    sulcus([[1.05, 0.58, hz * 0.95], [0.45, 0.98, hz * 1.22], [-0.35, 1.05, hz * 1.18], [-1.02, 0.65, hz * 0.92]], 0.038, '#64748b');
-    sulcus([[0.85, -0.22, hz * 1.18], [0.15, -0.28, hz * 1.32], [-0.55, -0.18, hz * 1.15]], 0.036, '#64748b');
-    sulcus([[0.55, 0.55, side * 0.86], [0.1, 0.72, side * 0.88], [-0.45, 0.58, side * 0.84]], 0.032, '#475569');
-  });
+  // Ствол мозга (мост и продолговатый мозг)
+  drawSmoothShape([
+    [-0.22, -0.25, 0],
+    [0.14, -0.32, 0],
+    [0.16, -0.78, 0.04],
+    [0.04, -1.58, 0],
+    [-0.24, -1.58, 0],
+    [-0.32, -0.75, -0.02]
+  ], '#d6b4b8', '#a37b80', '#7a5459', 1.3);
 
-  // Объёмный мозжечок с поперечными листками (folia)
-  [-0.36, 0.36].forEach((cz) => {
-    dome(-0.88, -0.64, cz, 0.58, 0.42, 0.34, '#64748b', '#94a3b8', 0.96);
-    [-0.52, -0.64, -0.76].forEach((fy) => {
-      sulcus([[-1.28, fy, cz * 0.85], [-0.88, fy - 0.04, cz * 1.35], [-0.48, fy, cz * 0.95]], 0.024, '#334155', 0.8);
+  // Мозжечок (правая и левая доли с поперечными бороздками)
+  [-0.28, 0.28].forEach((cz) => {
+    drawSmoothShape([
+      [-1.18, -0.35, cz],
+      [-0.45, -0.32, cz * 1.1],
+      [-0.38, -0.88, cz],
+      [-0.85, -1.05, cz * 0.9],
+      [-1.26, -0.72, cz * 0.85]
+    ], '#c49399', '#8f5f66', '#6b4248', 1.2);
+
+    [-0.48, -0.62, -0.76, -0.88].forEach((fy) => {
+      drawSulcus([
+        [-1.16, fy, cz * 1.18],
+        [-0.82, fy - 0.04, cz * 1.32],
+        [-0.46, fy + 0.02, cz * 1.18]
+      ], 0.022, '#6b4248', '#dfb5ba', 0.03);
     });
   });
+
 
   // Ствол мозга (мост и продолговатый мозг)
   sulcus([[-0.18, -0.32, 0], [-0.22, -0.82, 0], [-0.26, -1.58, 0]], 0.24, '#94a3b8', 0.95);
