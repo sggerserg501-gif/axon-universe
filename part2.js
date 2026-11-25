@@ -56,8 +56,6 @@ window.AtlasScenes.drawSpine = function (c, neck) {
     });
   }
 
-  }
-
   function drawVertebra(yCenter) {
     const rx = 0.86 * sc, rz = 0.68 * sc, h = 0.42 * sc, z0 = 0.24 * sc;
     const segs = 16;
