@@ -1,17 +1,53 @@
 window.AtlasScenes = window.AtlasScenes || {};
 
 window.AtlasScenes['6'] = ({ ctx, R, cx, cy, scale, t, stage, stColor }) => {
-  const wTop = stage === 2 ? 0.68 : stage === 1 ? 0.48 : 0.38;
-  R.poly(ctx, [[-wTop, 1.85, 0], [wTop, 1.85, 0], [0.38, -1.85, 0], [-0.38, -1.85, 0]], '#1e3a8a', '#3b82f6', '#93c5fd', cx, cy, scale, 0.45);
-  R.tube(ctx, [[-wTop, 0.35, 0], [-0.05, stage === 0 ? 0.02 : 0.48, 0]], 0.09, stColor, cx, cy, scale);
-  R.tube(ctx, [[wTop, 0.35, 0], [0.05, stage === 0 ? 0.02 : 0.48, 0]], 0.09, stColor, cx, cy, scale);
-  for (let i = 0; i < 6; i++) R.sphere(ctx, (i % 2 - 0.5) * 0.25, -1.6 + (((t * 0.6 + i * 0.16) % 1) * 3.2), 0.1, 0.11, '#ef4444', false, cx, cy, scale);
+  const bulge = stage === 2 ? 0.34 : stage === 1 ? 0.16 : 0;
+  const open = stage === 2 ? 0.32 : stage === 1 ? 0.16 : 0.03;
+
+  // Объёмные стенки вены с варикозным расширением при патологии
+  R.tube(ctx, [[-0.42, -1.9, 0], [-0.44 - bulge * 0.5, -0.5, 0], [-0.48 - bulge, 0.35, 0], [-0.46 - bulge * 0.8, 1.15, 0], [-0.42, 1.9, 0]], 0.14, '#1e40af', cx, cy, scale, 0.9);
+  R.tube(ctx, [[0.42, -1.9, 0], [0.44 + bulge * 0.5, -0.5, 0], [0.48 + bulge, 0.35, 0], [0.46 + bulge * 0.8, 1.15, 0], [0.42, 1.9, 0]], 0.14, '#1e40af', cx, cy, scale, 0.9);
+  if (stage > 0) {
+    R.sphere(ctx, -0.52 - bulge, 0.45, 0.12, 0.22 + bulge * 0.5, '#1d4ed8', false, cx, cy, scale, 0.65);
+    R.sphere(ctx, 0.52 + bulge, 0.95, -0.1, 0.2 + bulge * 0.5, '#1d4ed8', false, cx, cy, scale, 0.65);
+  }
+
+  // Изогнутые створки венозного клапана
+  R.tube(ctx, [[-0.44 - bulge * 0.8, 0.35, 0], [-0.24 - bulge * 0.3, 0.12, 0.06], [-open, 0.38, 0.08]], 0.08, stColor, cx, cy, scale);
+  R.tube(ctx, [[0.44 + bulge * 0.8, 0.35, 0], [0.24 + bulge * 0.3, 0.12, 0.06], [open, 0.38, 0.08]], 0.08, stColor, cx, cy, scale);
+
+  // Поток эритроцитов (при стадии 2 часть клеток проваливается вниз через несомкнутый клапан)
+  for (let i = 0; i < 8; i++) {
+    const dir = (stage === 2 && i % 3 === 0) ? -1 : 1;
+    const phase = ((t * 0.55 * dir + i * 0.125) % 1 + 1) % 1;
+    const y = -1.75 + phase * 3.5;
+    const x = Math.sin(i * 2.1 + y) * (0.22 + bulge * 0.4);
+    R.sphere(ctx, x, y, 0.08, 0.1, '#ef4444', false, cx, cy, scale, 0.92);
+  }
 };
 
 window.AtlasScenes['7'] = ({ ctx, R, cx, cy, scale, stage, stColor }) => {
-  R.poly(ctx, [[-0.55, 1.9, 0], [0.55, 1.9, 0], [0.95, 0.35, 0], [0.35, 0.18, 0], [-0.35, 0.18, 0], [-0.95, 0.35, 0]], '#cbd5e1', '#f8fafc', '#94a3b8', cx, cy, scale, 0.94);
-  R.poly(ctx, [[-0.92, -0.25, 0], [0.92, -0.25, 0], [0.55, -1.9, 0], [-0.55, -1.9, 0]], '#cbd5e1', '#f8fafc', '#94a3b8', cx, cy, scale, 0.94);
-  R.sphere(ctx, 0, 0.25, 0.95, 0.34, '#e2e8f0', false, cx, cy, scale, 0.9);
-  R.tube(ctx, [[-0.88, -0.05, 0], [0, -0.05, 0.78], [0.88, -0.05, 0]], 0.16, stage === 1 ? stColor : '#0284c7', cx, cy, scale);
-  R.tube(ctx, [[-0.25, -0.28, 0], [0.25, 0.28, 0]], 0.12, stage === 2 ? stColor : '#facc15', cx, cy, scale);
+  // Бедренная кость и объёмные мыщелки (медиальный и латеральный)
+  R.tube(ctx, [[0, 1.95, -0.05], [0, 0.72, 0]], 0.42, '#e2e8f0', cx, cy, scale, 0.96);
+  R.sphere(ctx, -0.46, 0.38, 0.05, 0.46, '#f1f5f9', false, cx, cy, scale, 0.96);
+  R.sphere(ctx, 0.46, 0.38, 0.05, 0.46, '#f1f5f9', false, cx, cy, scale, 0.96);
+
+  // Большеберцовая кость (плато и диафиз) + малоберцовая кость сбоку
+  R.sphere(ctx, -0.44, -0.34, 0.04, 0.44, '#e2e8f0', false, cx, cy, scale, 0.96);
+  R.sphere(ctx, 0.44, -0.34, 0.04, 0.44, '#e2e8f0', false, cx, cy, scale, 0.96);
+  R.tube(ctx, [[0, -0.45, 0], [0, -1.95, -0.05]], 0.38, '#cbd5e1', cx, cy, scale, 0.96);
+  R.tube(ctx, [[0.78, -0.55, -0.18], [0.72, -1.95, -0.22]], 0.14, '#cbd5e1', cx, cy, scale, 0.92);
+
+  // Мениски (внутренний и наружный хрящевые полумесяцы)
+  R.tube(ctx, [[-0.86, -0.04, -0.1], [-0.48, -0.04, 0.48], [-0.08, -0.04, 0.15]], 0.13, stage === 1 ? stColor : '#0284c7', cx, cy, scale);
+  R.tube(ctx, [[0.08, -0.04, 0.15], [0.48, -0.04, 0.48], [0.86, -0.04, -0.1]], 0.13, '#0284c7', cx, cy, scale);
+
+  // Передняя и задняя крестообразные связки (ПКС и ЗКС) + боковые связки
+  R.tube(ctx, [[-0.16, -0.24, 0.16], [0.18, 0.26, -0.12]], 0.09, stage === 2 ? stColor : '#facc15', cx, cy, scale);
+  R.tube(ctx, [[0.16, -0.24, -0.16], [-0.18, 0.26, 0.12]], 0.09, '#eab308', cx, cy, scale);
+  R.tube(ctx, [[-0.88, 0.42, 0], [-0.88, -0.42, 0]], 0.08, '#fde047', cx, cy, scale);
+  R.tube(ctx, [[0.88, 0.42, 0], [0.88, -0.42, 0]], 0.08, '#fde047', cx, cy, scale);
+
+  // Надколенник (коленная чашечка) спереди
+  R.sphere(ctx, 0, 0.22, 0.68, 0.32, '#f8fafc', false, cx, cy, scale, 0.88);
 };
