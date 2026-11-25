@@ -110,32 +110,58 @@ window.AtlasScenes['1'] = ({ ctx, R, cx, cy, scale, t, stage, stColor }) => {
       ], 0.022, '#6b4248', '#dfb5ba', 0.03);
     });
   });
+    // Два объёмных полушария мозга (левое и правое)
+  [-0.38, 0.38].forEach((hz) => {
+    const side = hz > 0 ? 1 : -1;
+    [0.55, 1.0].forEach((k) => {
+      const z = hz * k;
+      drawSmoothShape([
+        [-1.38, 0.05, z * 0.82],
+        [-1.32, 0.78, z * 0.9],
+        [-0.68, 1.34, z * 0.95],
+        [0.18, 1.42, z * 0.95],
+        [0.98, 1.08, z * 0.88],
+        [1.46, 0.42, z * 0.8],
+        [1.36, -0.18, z * 0.85],
+        [0.65, -0.36, z * 1.05],
+        [-0.18, -0.34, z * 1.02],
+        [-0.88, -0.34, z * 0.9]
+      ], '#e8c1c5', '#b58087', '#7d4f56', k === 1 ? 1.5 : 0.6);
+    });
 
+    const sz = side * 0.46;
+    drawSulcus([[0.08, 1.32, sz * 0.82], [-0.04, 0.78, sz * 1.02], [-0.14, 0.22, sz * 1.05]], 0.036, '#7a4b52', '#f3d5d8');
+    drawSulcus([[0.86, 0.14, sz * 0.95], [0.22, 0.06, sz * 1.08], [-0.52, 0.24, sz * 1.0]], 0.042, '#693c43', '#f3d5d8');
+    drawSulcus([[1.08, 0.64, sz * 0.85], [0.58, 0.96, sz * 0.96], [0.16, 0.88, sz * 1.0]], 0.03, '#85535a', '#efd0d3');
+    drawSulcus([[1.22, 0.34, sz * 0.86], [0.68, 0.52, sz * 0.98], [0.22, 0.44, sz * 1.02]], 0.028, '#85535a', '#efd0d3');
+    drawSulcus([[-0.22, 1.08, sz * 0.92], [-0.72, 0.92, sz * 0.92], [-1.12, 0.56, sz * 0.86]], 0.03, '#85535a', '#efd0d3');
+    drawSulcus([[-0.26, 0.62, sz * 0.98], [-0.78, 0.48, sz * 0.95], [-1.18, 0.18, sz * 0.86]], 0.028, '#85535a', '#efd0d3');
+    drawSulcus([[0.82, -0.14, sz * 0.98], [0.24, -0.2, sz * 1.06], [-0.46, -0.12, sz * 0.98]], 0.03, '#7a4b52', '#efd0d3');
+  });
 
-  // Ствол мозга (мост и продолговатый мозг)
-  sulcus([[-0.18, -0.32, 0], [-0.22, -0.82, 0], [-0.26, -1.58, 0]], 0.24, '#94a3b8', 0.95);
-  sulcus([[-0.16, -0.52, 0.08], [-0.18, -0.78, 0.1]], 0.28, '#cbd5e1', 0.96);
-
-  // Очаг ишемии / опухоли / кровоизлияния внутри полушария
+  // Очаг ишемии / кровоизлияния при патологии (stage 1 и 2)
   if (stage > 0) {
-    const p = P(0.45, 0.38, 0.42);
-    add((p.z || 0) + 0.15, () => {
-      ctx.save();
-      const rad = Math.max(4, (stage === 1 ? 0.36 : 0.62) * pulse * scale);
-      const g = ctx.createRadialGradient(p.sx, p.sy, rad * 0.1, p.sx, p.sy, rad);
-      g.addColorStop(0, '#ffffff');
-      g.addColorStop(0.35, stColor);
-      g.addColorStop(1, 'rgba(239, 68, 68, 0)');
-      ctx.fillStyle = g;
-      ctx.beginPath();
-      ctx.arc(p.sx, p.sy, rad, 0, Math.PI * 2);
-      ctx.fill();
-      ctx.restore();
+    const lp = P(0.42, 0.42, 0.38);
+    layers.push({
+      z: (lp.z || 0) + 0.25,
+      draw() {
+        ctx.save();
+        const rad = Math.max(6, (stage === 1 ? 0.36 : 0.6) * pulse * scale);
+        const g = ctx.createRadialGradient(lp.sx, lp.sy, rad * 0.1, lp.sx, lp.sy, rad);
+        g.addColorStop(0, '#ffffff');
+        g.addColorStop(0.35, stColor);
+        g.addColorStop(1, 'rgba(239, 68, 68, 0)');
+        ctx.fillStyle = g;
+        ctx.beginPath();
+        ctx.arc(lp.sx, lp.sy, rad, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.restore();
+      }
     });
   }
 
-  items.sort((a, b) => a.z - b.z);
-  items.forEach((it) => it.fn());
+  layers.sort((a, b) => a.z - b.z);
+  layers.forEach((l) => l.draw());
 };
 
 window.AtlasScenes['2'] = ({ ctx, R, cx, cy, scale, t, stage, stColor }) => {
