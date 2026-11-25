@@ -63,7 +63,6 @@
         activeHeart = true;
         G.stage = 0;
         if (oldCanvas) oldCanvas.style.display = 'none';
-                if (oldCanvas) oldCanvas.style.display = 'none';
         if (box && G.div.parentElement !== box) box.appendChild(G.div);
       
         G.div.style.display = 'block';
