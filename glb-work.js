@@ -1,19 +1,19 @@
 window.AtlasGLBWork = (function () {
   function createMyocardiumTexture(THREE) {
     const c = document.createElement('canvas');
-    c.width = 256;
-    c.height = 256;
+    c.width = 512;
+    c.height = 512;
     const g = c.getContext('2d');
-    g.fillStyle = '#8b1e2b';
-    g.fillRect(0, 0, 256, 256);
+    g.fillStyle = '#6e1420';
+    g.fillRect(0, 0, 512, 512);
 
-    for (let i = 0; i < 420; i++) {
-      const y = (i / 420) * 256;
-      g.strokeStyle = i % 2 === 0 ? 'rgba(110, 18, 28, 0.35)' : 'rgba(185, 58, 72, 0.22)';
-      g.lineWidth = 1.5;
+    for (let i = 0; i < 900; i++) {
+      const y = (i / 900) * 512;
+      g.strokeStyle = i % 3 === 0 ? 'rgba(75, 10, 18, 0.45)' : i % 2 === 0 ? 'rgba(155, 38, 52, 0.28)' : 'rgba(210, 145, 110, 0.12)';
+      g.lineWidth = 1.4;
       g.beginPath();
-      for (let x = 0; x <= 256; x += 16) {
-        const dy = Math.sin((x / 256) * Math.PI * 4 + i * 0.2) * 3;
+      for (let x = 0; x <= 512; x += 16) {
+        const dy = Math.sin((x / 512) * Math.PI * 6 + i * 0.15) * 4;
         if (x === 0) g.moveTo(x, y + dy);
         else g.lineTo(x, y + dy);
       }
@@ -26,45 +26,54 @@ window.AtlasGLBWork = (function () {
 
   function buildAnatomicalHeart(THREE) {
     const heart = new THREE.Group();
-    heart.scale.setScalar(0.76);
-    heart.position.y = -0.08;
+    heart.scale.setScalar(0.78);
+    heart.position.y = -0.1;
 
     const myoTex = createMyocardiumTexture(THREE);
 
     const muscleMat = new THREE.MeshPhysicalMaterial({
       map: myoTex,
       bumpMap: myoTex,
-      bumpScale: 0.025,
-      color: 0xa62636,
-      roughness: 0.34,
-      metalness: 0.04,
-      clearcoat: 0.35,
-      clearcoatRoughness: 0.28
+      bumpScale: 0.038,
+      color: 0x8f1d2c,
+      roughness: 0.42,
+      metalness: 0.02,
+      clearcoat: 0.28,
+      clearcoatRoughness: 0.35
     });
 
     const auricleMat = new THREE.MeshPhysicalMaterial({
-      color: 0x9e3b46,
-      roughness: 0.4,
-      clearcoat: 0.25
+      map: myoTex,
+      bumpMap: myoTex,
+      bumpScale: 0.025,
+      color: 0x7a1c28,
+      roughness: 0.46,
+      clearcoat: 0.22
+    });
+
+    const fatMat = new THREE.MeshPhysicalMaterial({
+      color: 0xd9a760,
+      roughness: 0.55,
+      clearcoat: 0.2
     });
 
     const vesselRedMat = new THREE.MeshPhysicalMaterial({
-      color: 0xc82333,
-      roughness: 0.3,
-      clearcoat: 0.4
+      color: 0xb81d2d,
+      roughness: 0.36,
+      clearcoat: 0.35
     });
 
     const coronaryArtMat = new THREE.MeshPhysicalMaterial({
-      color: 0xe63946,
-      emissive: 0x3b080c,
-      roughness: 0.28,
-      clearcoat: 0.45
+      color: 0xdc2626,
+      emissive: 0x2b0508,
+      roughness: 0.32,
+      clearcoat: 0.4
     });
 
     const vesselBlueMat = new THREE.MeshPhysicalMaterial({
-      color: 0x254e9b,
-      roughness: 0.32,
-      clearcoat: 0.35
+      color: 0x1e408a,
+      roughness: 0.36,
+      clearcoat: 0.3
     });
 
     const bodyGeo = new THREE.SphereGeometry(1.0, 56, 56);
