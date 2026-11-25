@@ -1,43 +1,85 @@
 window.AtlasGLBWork = (function () {
+  function createMyocardiumTexture(THREE) {
+    const c = document.createElement('canvas');
+    c.width = 256;
+    c.height = 256;
+    const g = c.getContext('2d');
+    g.fillStyle = '#8b1e2b';
+    g.fillRect(0, 0, 256, 256);
+
+    for (let i = 0; i < 420; i++) {
+      const y = (i / 420) * 256;
+      g.strokeStyle = i % 2 === 0 ? 'rgba(110, 18, 28, 0.35)' : 'rgba(185, 58, 72, 0.22)';
+      g.lineWidth = 1.5;
+      g.beginPath();
+      for (let x = 0; x <= 256; x += 16) {
+        const dy = Math.sin((x / 256) * Math.PI * 4 + i * 0.2) * 3;
+        if (x === 0) g.moveTo(x, y + dy);
+        else g.lineTo(x, y + dy);
+      }
+      g.stroke();
+    }
+    const tex = new THREE.CanvasTexture(c);
+    tex.wrapS = tex.wrapT = THREE.RepeatWrapping;
+    return tex;
+  }
+
   function buildAnatomicalHeart(THREE) {
     const heart = new THREE.Group();
+    heart.scale.setScalar(0.76);
+    heart.position.y = -0.08;
 
-    const muscleMat = new THREE.MeshStandardMaterial({
-      color: 0xc92a3e,
-      roughness: 0.45,
-      metalness: 0.1
+    const myoTex = createMyocardiumTexture(THREE);
+
+    const muscleMat = new THREE.MeshPhysicalMaterial({
+      map: myoTex,
+      bumpMap: myoTex,
+      bumpScale: 0.025,
+      color: 0xa62636,
+      roughness: 0.34,
+      metalness: 0.04,
+      clearcoat: 0.35,
+      clearcoatRoughness: 0.28
     });
 
-    const auricleMat = new THREE.MeshStandardMaterial({
-      color: 0xe08e84,
-      roughness: 0.5,
-      metalness: 0.05
+    const auricleMat = new THREE.MeshPhysicalMaterial({
+      color: 0x9e3b46,
+      roughness: 0.4,
+      clearcoat: 0.25
     });
 
-    const vesselRedMat = new THREE.MeshStandardMaterial({
-      color: 0xd93848,
-      roughness: 0.38,
-      metalness: 0.1
+    const vesselRedMat = new THREE.MeshPhysicalMaterial({
+      color: 0xc82333,
+      roughness: 0.3,
+      clearcoat: 0.4
     });
 
-    const vesselBlueMat = new THREE.MeshStandardMaterial({
-      color: 0x3b66b8,
-      roughness: 0.38,
-      metalness: 0.1
+    const coronaryArtMat = new THREE.MeshPhysicalMaterial({
+      color: 0xe63946,
+      emissive: 0x3b080c,
+      roughness: 0.28,
+      clearcoat: 0.45
     });
 
-    const bodyGeo = new THREE.SphereGeometry(1.0, 48, 48);
+    const vesselBlueMat = new THREE.MeshPhysicalMaterial({
+      color: 0x254e9b,
+      roughness: 0.32,
+      clearcoat: 0.35
+    });
+
+    const bodyGeo = new THREE.SphereGeometry(1.0, 56, 56);
     const pos = bodyGeo.attributes.position;
     for (let i = 0; i < pos.count; i++) {
       let x = pos.getX(i);
       let y = pos.getY(i);
       let z = pos.getZ(i);
       const t = (y + 1) / 2;
-      const taper = 0.28 + 0.78 * Math.pow(t, 0.58);
+      const taper = 0.26 + 0.8 * Math.pow(t, 0.56);
+      const groove = Math.exp(-Math.pow((x - 0.14) * 5.5, 2)) * 0.045;
       x *= taper * 0.94;
-      z *= taper * 0.78;
+      z *= (taper * 0.78) - groove;
       y *= 1.24;
-      x += (1 - t) * 0.24;
+      x += (1 - t) * 0.26;
       z += (1 - t) * 0.14;
       pos.setXYZ(i, x, y, z);
     }
@@ -60,9 +102,10 @@ window.AtlasGLBWork = (function () {
 
     function makeTube(pts, r, mat) {
       const curve = new THREE.CatmullRomCurve3(pts.map(p => new THREE.Vector3(...p)));
-      const geo = new THREE.TubeGeometry(curve, 36, r, 18, false);
+      const geo = new THREE.TubeGeometry(curve, 40, r, 18, false);
       return new THREE.Mesh(geo, mat);
     }
+
     heart.add(makeTube([
       [0.05, 0.75, -0.05],
       [-0.12, 1.28, -0.02],
