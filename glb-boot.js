@@ -38,6 +38,23 @@
       return false;
     }
 
+    function forceResize() {
+      if (!box || !G.renderer || !G.camera) return;
+      const w = box.clientWidth || box.parentElement.clientWidth || 640;
+      const h = box.clientHeight || box.parentElement.clientHeight || 480;
+      G.div.style.width = w + 'px';
+      G.div.style.height = h + 'px';
+      G.renderer.domElement.style.width = '100%';
+      G.renderer.domElement.style.height = '100%';
+      G.renderer.domElement.style.display = 'block';
+      G.camera.aspect = w / h;
+      G.camera.updateProjectionMatrix();
+      G.renderer.setSize(w, h, false);
+    }
+
+    window.addEventListener('resize', () => {
+      if (activeHeart) forceResize();
+    });
     function syncHeart() {
       const isHeart = isHeartSelected();
       const oldCanvas = box ? box.querySelector(':scope > canvas') : null;
@@ -47,8 +64,10 @@
         G.stage = 0;
         if (oldCanvas) oldCanvas.style.display = 'none';
         G.div.style.display = 'block';
-        G.resize();
-        G.camera.position.set(0, 0.2, 3.6);
+        G.div.style.zIndex = '4';
+        forceResize();
+        G.camera.position.set(0, 0.2, 4.2);
+        G.camera.lookAt(0, 0.15, 0);
         G.scene.rotation.set(0, 0, 0);
         work = window.AtlasGLBWork.mount({
           THREE: window.THREE,
@@ -81,7 +100,7 @@
     G.div.addEventListener('wheel', (e) => {
       if (!activeHeart) return;
       e.preventDefault();
-      G.camera.position.z = Math.max(2.0, Math.min(7.5, G.camera.position.z + e.deltaY * 0.003));
+      G.camera.position.z = Math.max(2.0, Math.min(8.0, G.camera.position.z + e.deltaY * 0.003));
     }, { passive: false });
 
     let last = performance.now();
