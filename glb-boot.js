@@ -3,8 +3,6 @@
     const G = window.GLB;
     if (!G || !window.THREE || !window.AtlasGLBWork) return;
 
-    G.models = {};
-
     let work = null;
     let activeHeart = false;
     let clickedHeart = false;
@@ -17,16 +15,37 @@
         if (!item || !list.contains(item)) return;
         const items = Array.from(list.children);
         const idx = items.findIndex(el => el === item || el.contains(item));
-        if (idx !== -1) clickedHeart = (idx === 5);
+        if (idx !== -1) {
+          clickedHeart = (idx === 5);
+          if (clickedHeart) G.stage = 0;
+        }
       });
     }
+
+    // Синхронизация кнопок клинических стадий (1, 2, 3)
+    document.querySelectorAll('.stage-btn').forEach((btn) => {
+      btn.addEventListener('click', () => {
+        G.stage = Number(btn.dataset.stage) || 0;
+      });
+    });
+
+    // Синхронизация кнопок камеры и паузы
+    const camFront = document.getElementById('cam-front');
+    const camSide = document.getElementById('cam-side');
+    const camTop = document.getElementById('cam-top');
+    const btnPause = document.getElementById('toggle-pause');
+
+    if (camFront) camFront.addEventListener('click', () => { if (activeHeart) G.scene.rotation.set(0.1, 0, 0); });
+    if (camSide) camSide.addEventListener('click', () => { if (activeHeart) G.scene.rotation.set(0.1, Math.PI / 2, 0); });
+    if (camTop) camTop.addEventListener('click', () => { if (activeHeart) G.scene.rotation.set(1.3, 0, 0); });
+    if (btnPause) btnPause.addEventListener('click', () => { G.paused = !G.paused; });
 
     function isHeartSelected() {
       if (clickedHeart) return true;
       const titleEl = document.getElementById('info-title');
       if (titleEl) {
         const t = titleEl.textContent.toLowerCase();
-        if (t.includes('сердц') || t.includes('heart') || t.includes('coraz') || t.includes('herz') || t.includes('心')) {
+        if (t.includes('сердц') || t.includes('heart') || t.includes('coraz') || t.includes('herz') || t.includes('心') || t.includes('миокард') || t.includes('коронар')) {
           return true;
         }
       }
@@ -43,6 +62,7 @@
         G.div.style.display = 'block';
         G.resize();
         G.camera.position.set(0, 0.2, 3.6);
+        G.scene.rotation.set(0, 0, 0);
         work = window.AtlasGLBWork.mount({
           THREE: window.THREE,
           scene: G.scene,
@@ -57,11 +77,9 @@
       }
     }
 
-    // Вращение мышкой и колесиком прямо в окне #canvas-3d
     let px = 0, py = 0;
     G.div.addEventListener('pointerdown', e => {
       G.drag = true;
-      G.paused = true;
       px = e.clientX;
       py = e.clientY;
     });
@@ -86,12 +104,13 @@
       if (!activeHeart) return;
       const dt = Math.min((now - last) / 1000, 0.1);
       last = now;
-      G.autoRotate = !G.paused;
+      G.autoRotate = !G.paused && !G.drag;
       if (work && work.update) work.update(dt, now / 1000);
       G.renderer.render(G.scene, G.camera);
     }
     requestAnimationFrame(loop);
   }
 
-  window.addEventListener('load', () => setTimeout(hookGLB, 250));
+  if (document.readyState === 'complete') setTimeout(hookGLB, 100);
+  else window.addEventListener('load', () => setTimeout(hookGLB, 100));
 })();
