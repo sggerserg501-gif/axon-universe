@@ -7,18 +7,30 @@
 
     let work = null;
     let activeHeart = false;
+    let clickedHeart = false;
     const box = document.getElementById('canvas-3d');
+    const list = document.getElementById('section-list');
+
+    if (list) {
+      list.addEventListener('click', (e) => {
+        const item = e.target.closest('button, a, li, div');
+        if (!item || !list.contains(item)) return;
+        const items = Array.from(list.children);
+        const idx = items.findIndex(el => el === item || el.contains(item));
+        if (idx !== -1) clickedHeart = (idx === 5);
+      });
+    }
 
     function isHeartSelected() {
-      const list = document.getElementById('section-list');
-      if (!list) return false;
-      const items = Array.from(list.children);
-      const idx = items.findIndex(el =>
-        el.classList.contains('active') ||
-        el.classList.contains('selected') ||
-        el.getAttribute('aria-selected') === 'true'
-      );
-      return idx === 5;
+      if (clickedHeart) return true;
+      const titleEl = document.getElementById('info-title');
+      if (titleEl) {
+        const t = titleEl.textContent.toLowerCase();
+        if (t.includes('сердц') || t.includes('heart') || t.includes('coraz') || t.includes('herz') || t.includes('心')) {
+          return true;
+        }
+      }
+      return false;
     }
 
     function syncHeart() {
@@ -27,10 +39,10 @@
 
       if (isHeart && !activeHeart) {
         activeHeart = true;
-        if (oldCanvas) oldCanvas.style.visibility = 'hidden';
+        if (oldCanvas) oldCanvas.style.display = 'none';
         G.div.style.display = 'block';
         G.resize();
-        G.camera.position.set(0, 0.2, 4.3);
+        G.camera.position.set(0, 0.2, 3.6);
         work = window.AtlasGLBWork.mount({
           THREE: window.THREE,
           scene: G.scene,
@@ -39,7 +51,7 @@
       } else if (!isHeart && activeHeart) {
         activeHeart = false;
         G.div.style.display = 'none';
-        if (oldCanvas) oldCanvas.style.visibility = 'visible';
+        if (oldCanvas) oldCanvas.style.display = 'block';
         if (work && work.dispose) work.dispose();
         work = null;
       }
@@ -64,7 +76,7 @@
     G.div.addEventListener('wheel', e => {
       if (!activeHeart) return;
       e.preventDefault();
-      G.camera.position.z = Math.max(2.2, Math.min(7.5, G.camera.position.z + e.deltaY * 0.003));
+      G.camera.position.z = Math.max(2.0, Math.min(7.5, G.camera.position.z + e.deltaY * 0.003));
     }, { passive: false });
 
     let last = performance.now();
