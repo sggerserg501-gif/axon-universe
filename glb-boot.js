@@ -5,31 +5,14 @@
 
     let work = null;
     let activeHeart = false;
-    let clickedHeart = false;
     const box = document.getElementById('canvas-3d');
-    const list = document.getElementById('section-list');
 
-    if (list) {
-      list.addEventListener('click', (e) => {
-        const item = e.target.closest('button, a, li, div');
-        if (!item || !list.contains(item)) return;
-        const items = Array.from(list.children);
-        const idx = items.findIndex(el => el === item || el.contains(item));
-        if (idx !== -1) {
-          clickedHeart = (idx === 5);
-          if (clickedHeart) G.stage = 0;
-        }
-      });
-    }
-
-    // Синхронизация кнопок клинических стадий (1, 2, 3)
     document.querySelectorAll('.stage-btn').forEach((btn) => {
       btn.addEventListener('click', () => {
         G.stage = Number(btn.dataset.stage) || 0;
       });
     });
 
-    // Синхронизация кнопок камеры и паузы
     const camFront = document.getElementById('cam-front');
     const camSide = document.getElementById('cam-side');
     const camTop = document.getElementById('cam-top');
@@ -41,11 +24,14 @@
     if (btnPause) btnPause.addEventListener('click', () => { G.paused = !G.paused; });
 
     function isHeartSelected() {
-      if (clickedHeart) return true;
+      const items = Array.from(document.querySelectorAll('#section-list .section-item'));
+      const activeIdx = items.findIndex((el) => el.classList.contains('active'));
+      if (activeIdx === 5) return true;
+
       const titleEl = document.getElementById('info-title');
       if (titleEl) {
         const t = titleEl.textContent.toLowerCase();
-        if (t.includes('сердц') || t.includes('heart') || t.includes('coraz') || t.includes('herz') || t.includes('心') || t.includes('миокард') || t.includes('коронар')) {
+        if (t.includes('сердц') || t.includes('heart') || t.includes('миокард') || t.includes('коронар')) {
           return true;
         }
       }
@@ -58,6 +44,7 @@
 
       if (isHeart && !activeHeart) {
         activeHeart = true;
+        G.stage = 0;
         if (oldCanvas) oldCanvas.style.display = 'none';
         G.div.style.display = 'block';
         G.resize();
@@ -78,20 +65,20 @@
     }
 
     let px = 0, py = 0;
-    G.div.addEventListener('pointerdown', e => {
+    G.div.addEventListener('pointerdown', (e) => {
       G.drag = true;
       px = e.clientX;
       py = e.clientY;
     });
     window.addEventListener('pointerup', () => { G.drag = false; });
-    window.addEventListener('pointermove', e => {
+    window.addEventListener('pointermove', (e) => {
       if (!G.drag || !activeHeart) return;
       G.scene.rotation.y += (e.clientX - px) * 0.008;
       G.scene.rotation.x += (e.clientY - py) * 0.008;
       px = e.clientX;
       py = e.clientY;
     });
-    G.div.addEventListener('wheel', e => {
+    G.div.addEventListener('wheel', (e) => {
       if (!activeHeart) return;
       e.preventDefault();
       G.camera.position.z = Math.max(2.0, Math.min(7.5, G.camera.position.z + e.deltaY * 0.003));
