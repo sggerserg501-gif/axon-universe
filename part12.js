@@ -1,13 +1,25 @@
 window.AtlasScenes = window.AtlasScenes || {};
 window.AtlasScenes['12'] = ({ THREE, root, W, stage, stColor, isXray }) => {
   const bone = W.mat('bone', '#e2e8f0', isXray);
-  const pelvis = new THREE.Mesh(W.sculpt(new THREE.SphereGeometry(1.15, 32, 32), 0.06, 6), bone);
+  const pelvis = new THREE.Mesh(W.sculpt(new THREE.SphereGeometry(1.15, 40, 40), 0.04, 6), bone);
   pelvis.scale.set(1.15, 0.65, 0.75); pelvis.position.set(-0.25, 0.95, 0); root.add(pelvis);
-  const head = new THREE.Mesh(new THREE.SphereGeometry(0.56, 32, 32), bone);
-  head.position.set(-0.22, -0.05 + stage * 0.1, 0); root.add(head);
-  const shaft = new THREE.Mesh(new THREE.CylinderGeometry(0.28, 0.32, 1.75, 24), bone);
-  shaft.rotation.z = 0.25; shaft.position.set(0.35, -0.95, 0); root.add(shaft);
-  if (stage > 0) { const f = new THREE.Mesh(new THREE.SphereGeometry(0.28, 20, 20), W.mat('glow', stColor, false)); f.position.set(-0.22, 0.48, 0.2); root.add(f); }
+
+  const cart = new THREE.Mesh(new THREE.SphereGeometry(0.62, 32, 32), W.mat('cartilage', '#38bdf8', isXray));
+  cart.scale.set(1, 0.55, 1); cart.position.set(-0.22, 0.42, 0); root.add(cart);
+
+  const head = new THREE.Mesh(new THREE.SphereGeometry(0.54, 36, 36), bone);
+  head.position.set(-0.22, -0.02 + stage * 0.08, 0); root.add(head);
+
+  const neck = new THREE.Mesh(new THREE.CylinderGeometry(0.24, 0.3, 0.75, 24), bone);
+  neck.rotation.z = 0.75; neck.position.set(0.06, -0.32, 0); root.add(neck);
+
+  const shaft = new THREE.Mesh(new THREE.CylinderGeometry(0.28, 0.32, 1.65, 24), bone);
+  shaft.rotation.z = 0.16; shaft.position.set(0.38, -1.05, 0); root.add(shaft);
+
+  if (stage > 0) {
+    const f = new THREE.Mesh(new THREE.SphereGeometry(stage === 1 ? 0.24 : 0.34, 24, 24), W.mat('glow', stColor, false));
+    f.position.set(-0.22, 0.44, 0.16); root.add(f);
+  }
 };
 
 (function () {
