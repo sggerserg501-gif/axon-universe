@@ -2,51 +2,46 @@ window.AtlasScenes = window.AtlasScenes || {};
 
 window.AtlasScenes['1'] = ({ ctx, R, cx, cy, scale, t, stage, stColor }) => {
   const pulse = 1 + Math.sin(t * 4) * 0.1;
-  const items = [];
   const P = (x, y, z) => R.project(x, y, z, cx, cy, scale);
+  const layers = [];
 
-  function add(z, fn) {
-    items.push({ z, fn });
-  }
-
-  function dome(x0, y0, z0, rx, ry, rz, colBase, colHi, alpha) {
-    const segs = 14;
-    for (let i = 0; i < segs; i++) {
-      const a = (i / segs) * Math.PI * 2;
-      const px = x0 + Math.cos(a) * rx * 0.52;
-      const py = y0 + Math.sin(a) * ry * 0.52;
-      const pz = z0 + Math.sin(a * 2) * rz * 0.35;
-      const p = P(px, py, pz);
-      add(p.z || 0, () => {
-        ctx.save();
-        ctx.globalAlpha = alpha == null ? 0.94 : alpha;
-        const rad = Math.max(2, ((rx + ry) * 0.28) * scale);
-        const g = ctx.createRadialGradient(p.sx - rad * 0.25, p.sy - rad * 0.25, rad * 0.1, p.sx, p.sy, rad);
-        g.addColorStop(0, colHi);
-        g.addColorStop(1, colBase);
-        ctx.fillStyle = g;
-        ctx.beginPath();
-        ctx.arc(p.sx, p.sy, rad, 0, Math.PI * 2);
-        ctx.fill();
-        ctx.restore();
-      });
-    }
-  }
-
-  function sulcus(pts, r, col, alpha) {
-    const proj = pts.map((pt) => P(pt[0], pt[1], pt[2]));
+  function drawSmoothShape(pts3D, fillTop, fillBot, strokeCol, lw) {
+    const proj = pts3D.map((pt) => P(...pt));
     const avgZ = proj.reduce((s, p) => s + (p.z || 0), 0) / proj.length;
-    add(avgZ, () => {
-      ctx.save();
-      ctx.globalAlpha = alpha == null ? 0.72 : alpha;
-      ctx.lineCap = 'round';
-      ctx.lineJoin = 'round';
-      ctx.strokeStyle = col;
-      ctx.lineWidth = Math.max(1.2, r * 2 * scale);
-      ctx.beginPath();
-      proj.forEach((p, i) => (i === 0 ? ctx.moveTo(p.sx, p.sy) : ctx.lineTo(p.sx, p.sy)));
-      ctx.stroke();
-      ctx.restore();
+    layers.push({
+      z: avgZ,
+      draw() {
+        ctx.save();
+        ctx.beginPath();
+        const n = proj.length;
+        for (let i = 0; i < n; i++) {
+          const p0 = proj[i];
+          const p1 = proj[(i + 1) % n];
+          const mx = (p0.sx + p1.sx) / 2;
+          const my = (p0.sy + p1.sy) / 2;
+          if (i === 0) ctx.moveTo(mx, my);
+          ctx.quadraticCurveTo(p1.sx, p1.sy, (p1.sx + proj[(i + 2) % n].sx) / 2, (p1.sy + proj[(i + 2) % n].sy) / 2);
+        }
+        ctx.closePath();
+
+        let minY = Infinity, maxY = -Infinity;
+        proj.forEach((p) => {
+          if (p.sy < minY) minY = p.sy;
+          if (p.sy > maxY) maxY = p.sy;
+        });
+        const grad = ctx.createLinearGradient(0, minY, 0, maxY);
+        grad.addColorStop(0, fillTop);
+        grad.addColorStop(1, fillBot);
+        ctx.fillStyle = grad;
+        ctx.fill();
+
+        if (strokeCol) {
+          ctx.strokeStyle = strokeCol;
+          ctx.lineWidth = lw || 1.4;
+          ctx.stroke();
+        }
+        ctx.restore();
+      }
     });
   }
 
