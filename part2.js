@@ -2,46 +2,60 @@ window.AtlasScenes = window.AtlasScenes || {};
 
 window.AtlasScenes.drawSpine = function (c, neck) {
   const { ctx, R, cx, cy, scale, stage, stColor } = c;
-  const ys = neck ? [-1.15, 0, 1.15] : [-0.88, 0.88];
-  const sc = neck ? 0.82 : 1.0;
+  const ys = neck ? [-1.18, 0, 1.18] : [-0.95, 0.95];
+  const sc = neck ? 0.84 : 1.02;
+  const items = [];
 
   const P = (x, y, z) => R.project(x, y, z, cx, cy, scale);
 
-  function ball(x, y, z, r, color, a) {
-    const p = P(x, y, z);
-    ctx.globalAlpha = a == null ? 1 : a;
-    ctx.beginPath();
-    ctx.arc(p.sx, p.sy, Math.max(1, r * scale), 0, Math.PI * 2);
-    ctx.fillStyle = color;
-    // Тень для объёма
-ctx.shadowColor = 'rgba(0, 0, 0, 0.35)';
-ctx.shadowBlur = 8;
-ctx.shadowOffsetX = 2;
-ctx.shadowOffsetY = 2;
-
-// Аккуратная обводка — сразу похоже на кольца
-ctx.strokeStyle = '#64748b';
-ctx.lineWidth = 1.8;
-ctx.stroke();
-
-// Сбрасываем тень, чтобы не размазывалась по всему холсту
-ctx.shadowColor = 'transparent';
-ctx.shadowBlur = 0;
-ctx.fill();
-    ctx.globalAlpha = 1;
+  function addItem(zOrder, drawFn) {
+    items.push({ z: zOrder, draw: drawFn });
   }
 
-  function tube(x1, y1, z1, x2, y2, z2, w, color, a) {
-    const p1 = P(x1, y1, z1), p2 = P(x2, y2, z2);
-    ctx.globalAlpha = a == null ? 1 : a;
-    ctx.beginPath();
-    ctx.moveTo(p1.sx, p1.sy);
-    ctx.lineTo(p2.sx, p2.sy);
-    ctx.lineWidth = Math.max(1, w * scale);
-    ctx.lineCap = 'round';
-    ctx.strokeStyle = color;
-    ctx.stroke();
-    ctx.globalAlpha = 1;
+  function poly3D(pts, fill, stroke, lw, alpha) {
+    const proj = pts.map((pt) => P(pt[0], pt[1], pt[2]));
+    const avgZ = proj.reduce((s, p) => s + (p.z || 0), 0) / proj.length;
+    addItem(avgZ, () => {
+      ctx.save();
+      ctx.globalAlpha = alpha == null ? 1 : alpha;
+      ctx.beginPath();
+      proj.forEach((p, i) => (i === 0 ? ctx.moveTo(p.sx, p.sy) : ctx.lineTo(p.sx, p.sy)));
+      ctx.closePath();
+      if (fill) {
+        ctx.fillStyle = fill;
+        ctx.fill();
+      }
+      if (stroke) {
+        ctx.strokeStyle = stroke;
+        ctx.lineWidth = lw || 1.2;
+        ctx.stroke();
+      }
+      ctx.restore();
+    });
+  }
+
+  function tube3D(pts, r, color, highlight, alpha) {
+    const proj = pts.map((pt) => P(pt[0], pt[1], pt[2]));
+    const avgZ = proj.reduce((s, p) => s + (p.z || 0), 0) / proj.length;
+    addItem(avgZ, () => {
+      ctx.save();
+      ctx.globalAlpha = alpha == null ? 1 : alpha;
+      ctx.lineCap = 'round';
+      ctx.lineJoin = 'round';
+      ctx.beginPath();
+      proj.forEach((p, i) => (i === 0 ? ctx.moveTo(p.sx, p.sy) : ctx.lineTo(p.sx, p.sy)));
+      ctx.lineWidth = Math.max(1.5, r * 2 * scale);
+      ctx.strokeStyle = color;
+      ctx.stroke();
+      if (highlight) {
+        ctx.lineWidth = Math.max(0.8, r * 0.65 * scale);
+        ctx.strokeStyle = highlight;
+        ctx.stroke();
+      }
+      ctx.restore();
+    });
+  }
+
   }
 
   const bone = '#e2e8f0';
