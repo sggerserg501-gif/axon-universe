@@ -11,7 +11,6 @@
     let isPaused = false;
     let zoom = 1;
 
-    // Добавляем кнопки "+" и "-" в верхнюю панель рядом с Паузой и Во весь экран
     if (btnFs && btnFs.parentElement && !document.getElementById('zoom-in-btn')) {
       const bar = btnFs.parentElement;
       const btnMinus = document.createElement('button');
@@ -67,7 +66,6 @@
     });
     box.insertBefore(video, box.firstChild);
 
-    // Зум колесиком мыши по видео
     box.addEventListener('wheel', (e) => {
       if (!currentSrc) return;
       e.preventDefault();
@@ -92,10 +90,13 @@
       const activeStage = stages.findIndex((el) => el.classList.contains('active'));
       const isXray = btnXray && btnXray.classList.contains('active');
 
-      // Видео только на стадии "Норма" (0) и при выключенном "Рентгене"
-      if (activeStage > 0 || isXray) return '';
+      // Для 9 (Почки), 10 (Печень) и 11 (Желудок) показываем 3D-видео на всех стадиях
+      if (activeIdx === 8) return 'kidney.mp4';
+      if (activeIdx === 9) return 'liver.mp4';
+      if (activeIdx === 10) return 'stomach.mp4';
 
-      // Строго разделы: 0 (Позвоночник), 1 (Головной мозг), 5 (Сердце)
+      // Для 1 (Позвоночник), 2 (Мозг) и 6 (Сердце) — на стадии "Норма" без рентгена
+      if (activeStage > 0 || isXray) return '';
       if (activeIdx === 0) return 'spine.mp4';
       if (activeIdx === 1) return 'brain.mp4';
       if (activeIdx === 5) return 'heart.mp4';
