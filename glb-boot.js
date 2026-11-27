@@ -72,7 +72,6 @@
       zoom = Math.max(0.6, Math.min(2.5, +(zoom + (e.deltaY < 0 ? 0.15 : -0.15)).toFixed(2)));
       video.style.transform = `scale(${zoom})`;
     }, { passive: false });
-
     if (btnPause) {
       btnPause.addEventListener('click', () => {
         if (!currentSrc) return;
@@ -100,6 +99,8 @@
       if (activeIdx === 0) return 'spine.mp4';
       if (activeIdx === 1) return 'brain.mp4';
       if (activeIdx === 2) return 'neuron.mp4';
+      if (activeIdx === 3) return 'vessels.mp4';
+      if (activeIdx === 4) return 'cervical.mp4';
       if (activeIdx === 5) return 'heart.mp4';
       if (activeIdx === 6) return 'veins.mp4';
       if (activeIdx === 7) return 'knee.mp4';
