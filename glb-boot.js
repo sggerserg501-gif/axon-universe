@@ -89,6 +89,13 @@
       const activeStage = stages.findIndex((el) => el.classList.contains('active'));
       const isXray = btnXray && btnXray.classList.contains('active');
 
+      // Раздел 1: Позвоночник (все 3 стадии в 3D)
+      if (activeIdx === 0 && !isXray) {
+        if (activeStage === 1) return 'spine_stage2.mp4';
+        if (activeStage === 2) return 'spine_stage3.mp4';
+        return 'spine.mp4';
+      }
+
       // Для 9 (Почки), 10 (Печень) и 11 (Желудок) показываем 3D-видео на всех стадиях
       if (activeIdx === 8) return 'kidney.mp4';
       if (activeIdx === 9) return 'liver.mp4';
@@ -96,7 +103,6 @@
 
       // Для остальных разделов с видео — на стадии "Норма" без рентгена
       if (activeStage > 0 || isXray) return '';
-      if (activeIdx === 0) return 'spine.mp4';
       if (activeIdx === 1) return 'brain.mp4';
       if (activeIdx === 2) return 'neuron.mp4';
       if (activeIdx === 3) return 'vessels.mp4';
