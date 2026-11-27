@@ -4,6 +4,8 @@
     if (!box) return;
 
     const btnPause = document.getElementById('toggle-pause');
+    const btnXray = document.getElementById('toggle-xray');
+    const labelsLayer = document.getElementById('labels-layer');
     let currentSrc = '';
     let isPaused = false;
 
@@ -20,10 +22,10 @@
       objectFit: 'contain',
       background: '#000',
       display: 'none',
-      zIndex: '6',
+      zIndex: '1',
       pointerEvents: 'none'
     });
-    box.appendChild(video);
+    box.insertBefore(video, box.firstChild);
 
     if (btnPause) {
       btnPause.addEventListener('click', () => {
@@ -38,17 +40,17 @@
       const items = Array.from(document.querySelectorAll('#section-list .section-item'));
       const activeIdx = items.findIndex((el) => el.classList.contains('active'));
 
+      const stages = Array.from(document.querySelectorAll('.stage-btn'));
+      const activeStage = stages.findIndex((el) => el.classList.contains('active'));
+      const isXray = btnXray && btnXray.classList.contains('active');
+
+      // Видео только на стадии "Норма" (0) и при выключенном "Рентгене"
+      if (activeStage > 0 || isXray) return '';
+
+      // Строго только разделы: 0 (Позвоночник), 1 (Головной мозг), 5 (Сердце)
       if (activeIdx === 0) return 'spine.mp4';
       if (activeIdx === 1) return 'brain.mp4';
       if (activeIdx === 5) return 'heart.mp4';
-
-      const titleEl = document.getElementById('info-title');
-      if (titleEl) {
-        const t = titleEl.textContent.toLowerCase();
-        if (t.includes('позвоночник') || t.includes('spine') || t.includes('l4')) return 'spine.mp4';
-        if (t.includes('мозг') || t.includes('brain')) return 'brain.mp4';
-        if (t.includes('сердц') || t.includes('heart') || t.includes('миокард')) return 'heart.mp4';
-      }
       return '';
     }
 
@@ -59,6 +61,7 @@
 
       if (target) {
         if (oldCanvas) oldCanvas.style.display = 'none';
+        if (labelsLayer) labelsLayer.style.display = 'none';
         if (currentSrc !== target) {
           currentSrc = target;
           isPaused = false;
@@ -71,6 +74,7 @@
         video.pause();
         video.style.display = 'none';
         if (oldCanvas) oldCanvas.style.display = 'block';
+        if (labelsLayer) labelsLayer.style.display = 'block';
       }
     }
 
