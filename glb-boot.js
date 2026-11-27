@@ -58,7 +58,8 @@
       width: '100%',
       height: '100%',
       objectFit: 'contain',
-      background: '#000',
+      background: 'transparent',
+      mixBlendMode: 'lighten',
       display: 'none',
       zIndex: '1',
       pointerEvents: 'none',
@@ -82,34 +83,36 @@
     }
 
     function getTargetVideo() {
-      const items = Array.from(document.querySelectorAll('#section-list .section-item'));
-      const activeIdx = items.findIndex((el) => el.classList.contains('active'));
+      const items = Array.from(document.querySelectorAll('#section-list .section-item, #section-list button, .tab-btn'));
+      const activeEl = items.find((el) => el.classList.contains('active'));
+      const activeIdx = items.indexOf(activeEl);
+      const title = activeEl ? activeEl.textContent.toLowerCase() : '';
 
       const stages = Array.from(document.querySelectorAll('.stage-btn'));
       const activeStage = stages.findIndex((el) => el.classList.contains('active'));
       const isXray = btnXray && btnXray.classList.contains('active');
 
-      // Раздел 1: Позвоночник (все 3 стадии в 3D)
-      if (activeIdx === 0 && !isXray) {
+      // 1. Позвоночник (все 3 стадии в 3D)
+      if ((activeIdx === 0 || title.includes('позвоночник') || title.includes('spine') || title.includes('columna') || title.includes('wirbelsäule') || title.includes('脊柱')) && !isXray) {
         if (activeStage === 1) return 'spine_stage2.mp4';
         if (activeStage === 2) return 'spine_stage3.mp4';
         return 'spine.mp4';
       }
 
-      // Для 9 (Почки), 10 (Печень) и 11 (Желудок) показываем 3D-видео на всех стадиях
-      if (activeIdx === 8) return 'kidney.mp4';
-      if (activeIdx === 9) return 'liver.mp4';
-      if (activeIdx === 10) return 'stomach.mp4';
+      // 9. Почки, 10. Печень, 11. Желудок — на всех стадиях
+      if (activeIdx === 8 || title.includes('почк') || title.includes('kidney') || title.includes('riñon') || title.includes('nieren') || title.includes('肾')) return 'kidney.mp4';
+      if (activeIdx === 9 || title.includes('печен') || title.includes('liver') || title.includes('hígado') || title.includes('leber') || title.includes('肝')) return 'liver.mp4';
+      if (activeIdx === 10 || title.includes('желуд') || title.includes('stomach') || title.includes('estómago') || title.includes('magen') || title.includes('胃')) return 'stomach.mp4';
 
-      // Для остальных разделов с видео — на стадии "Норма" без рентгена
+      // Остальные разделы — на стадии "Норма" без рентгена
       if (activeStage > 0 || isXray) return '';
-      if (activeIdx === 1) return 'brain.mp4';
-      if (activeIdx === 2) return 'neuron.mp4';
-      if (activeIdx === 3) return 'vessels.mp4';
-      if (activeIdx === 4) return 'cervical.mp4';
-      if (activeIdx === 5) return 'heart.mp4';
-      if (activeIdx === 6) return 'veins.mp4';
-      if (activeIdx === 7) return 'knee.mp4';
+      if (activeIdx === 1 || title.includes('головн') || title.includes('brain')) return 'brain.mp4';
+      if (activeIdx === 2 || title.includes('нейрон') || title.includes('neuron')) return 'neuron.mp4';
+      if (activeIdx === 3 || title.includes('сосуды мозга') || title.includes('vessels')) return 'vessels.mp4';
+      if (activeIdx === 4 || title.includes('шейн') || title.includes('cervical')) return 'cervical.mp4';
+      if (activeIdx === 5 || title.includes('сердц') || title.includes('heart')) return 'heart.mp4';
+      if (activeIdx === 6 || title.includes('вен') || title.includes('veins')) return 'veins.mp4';
+      if (activeIdx === 7 || title.includes('колен') || title.includes('knee') || title.includes('rodilla') || title.includes('knie') || title.includes('膝')) return 'knee.mp4';
       return '';
     }
 
