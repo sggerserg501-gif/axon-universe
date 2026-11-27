@@ -8,7 +8,7 @@
   if (!layer || !window.ANAT_LABELS) return;
   layer.innerHTML = '';
 
-  const items = window.ANAT_LABELS[currentMod] || [];
+  const items = window.ANAT_LABELS[currentMod >= 8 ? currentMod + 1 : currentMod] || [];
   window._labelItems = items; // ← добавить эту строку
   items.forEach((item) => {
     const el = document.createElement('div');
@@ -54,7 +54,7 @@
         currentStage = 0;
         renderUI();
         rebuildLabels();
-        AtlasEngine.buildScene(currentMod, currentStage);
+        AtlasEngine.buildScene(currentMod >= 8 ? currentMod + 1 : currentMod, currentStage);
       };
       list.appendChild(btn);
     });
@@ -91,7 +91,7 @@
       btn.onclick = () => {
         currentStage = Number(btn.dataset.stage);
         renderUI();
-        AtlasEngine.buildScene(currentMod, currentStage);
+        AtlasEngine.buildScene(currentMod >= 8 ? currentMod + 1 : currentMod, currentStage);
       };
     });
 
