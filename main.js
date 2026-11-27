@@ -4,19 +4,21 @@
   let currentStage = 0;
 
   function rebuildLabels() {
-  const layer = document.getElementById('labels-layer');
-  if (!layer || !window.ANAT_LABELS) return;
-  layer.innerHTML = '';
+    const layer = document.getElementById('labels-layer');
+    if (!layer || !window.ANAT_LABELS) return;
+    layer.innerHTML = '';
 
-  const items = window.ANAT_LABELS[currentMod >= 8 ? currentMod + 1 : currentMod] || [];
-  window._labelItems = items; // ← добавить эту строку
-  items.forEach((item) => {
-    const el = document.createElement('div');
-    el.className = 'anat-pin';
-    el.textContent = item[currentLang] || item.en;
-    layer.appendChild(el);
-  });
-}  function updateLabelPositions() {
+    const items = window.ANAT_LABELS[currentMod >= 8 ? currentMod + 1 : currentMod] || [];
+    window._labelItems = items;
+    items.forEach((item) => {
+      const el = document.createElement('div');
+      el.className = 'anat-pin';
+      el.textContent = item[currentLang] || item.en;
+      layer.appendChild(el);
+    });
+  }
+
+  function updateLabelPositions() {
     if (!window._labelItems || !window.AtlasEngine.getView) return;
     const view = AtlasEngine.getView();
     const els = document.querySelectorAll('.anat-pin');
@@ -29,8 +31,7 @@
     });
   }
 
-
- function renderUI() {
+  function renderUI() {
     const langData = DB[currentLang] || DB.ru;
     const modData = langData.modules[currentMod];
     const stateData = modData.states[currentStage];
@@ -120,7 +121,7 @@
 
     renderUI();
     rebuildLabels();
-        window._onEngineFrame = updateLabelPositions;
+    window._onEngineFrame = updateLabelPositions;
     AtlasEngine.init('canvas-3d', () => {
       AtlasEngine.buildScene(currentMod, currentStage);
     });
