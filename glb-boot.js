@@ -95,11 +95,14 @@
       if (activeIdx === 9) return 'liver.mp4';
       if (activeIdx === 10) return 'stomach.mp4';
 
-      // Для 1 (Позвоночник), 2 (Мозг) и 6 (Сердце) — на стадии "Норма" без рентгена
+      // Для остальных разделов с видео — на стадии "Норма" без рентгена
       if (activeStage > 0 || isXray) return '';
       if (activeIdx === 0) return 'spine.mp4';
       if (activeIdx === 1) return 'brain.mp4';
+      if (activeIdx === 2) return 'neuron.mp4';
       if (activeIdx === 5) return 'heart.mp4';
+      if (activeIdx === 6) return 'veins.mp4';
+      if (activeIdx === 7) return 'knee.mp4';
       return '';
     }
 
